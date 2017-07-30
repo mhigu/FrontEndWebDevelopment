@@ -1,0 +1,32 @@
+You've learned a lot about web development so far. I want you to take a moment to write down your thoughts about web development here. Answer the following questions:
+  * What new skills have you learned?
+  * What has been easy?
+  * What has been difficult?
+  * How have you used the problem solving strategies from the first project to overcome challenges so far?
+
+---
+
+Your response goes here!
+
+## What new skills have you learned?
+
+* How to use BASIC HTML tags.
+* How to research about HTML tags when I stuck(MDN).
+
+
+## What has been easy?
+
+* All Contents.
+
+
+## What has been difficult?
+
+* Research on MDN.
+  I couldn't figure out what shold I type in command+F window when I stuck in some HTML expression
+  because I don't know not mutch about HTML tags, which one goes what I want to do. Finally I found that in goole search...
+  Maybe this is the problem of time I think.
+
+
+## How have you used the problem solving strategies from the first project to overcome challenges so far?
+
+I got a short break when I stuck in some HTML expression. And reviewed what I want to do and what I didn't do by fresh mind.
