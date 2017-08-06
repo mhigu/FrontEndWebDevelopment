@@ -1,0 +1,35 @@
+/* add your CSS here */
+
+#animal{
+    border: solid;
+}
+
+div.overwrap {
+    padding-left: 1em;
+}
+
+p.fact {
+    font-style: italic ;
+}
+
+span.label {
+    font-weight: bold
+}
+
+li.list {
+    list-style-type: none;
+}
+
+img.animal_image {
+    border: solid;
+    color: salmon;
+}
+
+div.description {
+    border: solid;
+    /* padding-bottom: 0; */
+}
+
+p.padding {
+    padding-top: 1em
+}
