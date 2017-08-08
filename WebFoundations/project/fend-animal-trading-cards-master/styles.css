@@ -1,35 +1,39 @@
 /* add your CSS here */
 
-#animal{
+.animal {
     border: solid;
+    width: 332px;
+    /* 1em == 16px */
+    /* https://www.w3schools.com/Tags/ref_pxtoemconversion.asp */
 }
 
-div.overwrap {
+.overwrap {
     padding-left: 1em;
+    padding-right: 1em;
 }
 
-p.fact {
+.fact {
     font-style: italic ;
 }
 
-span.label {
-    font-weight: bold
+.label {
+    font-weight: bold;
 }
 
-li.list {
+.list {
     list-style-type: none;
 }
 
-img.animal_image {
+.animal-image {
     border: solid;
+    border-width: thin;
     color: salmon;
 }
 
-div.description {
+.description {
     border: solid;
-    /* padding-bottom: 0; */
 }
 
-p.padding {
+.padding {
     padding-top: 1em
 }
