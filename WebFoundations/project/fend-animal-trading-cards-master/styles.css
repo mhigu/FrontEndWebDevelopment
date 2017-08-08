@@ -5,6 +5,7 @@
     width: 332px;
     /* 1em == 16px */
     /* https://www.w3schools.com/Tags/ref_pxtoemconversion.asp */
+    /* I don't know whether this is good. Should padding be designated by px??*/
 }
 
 .overwrap {
