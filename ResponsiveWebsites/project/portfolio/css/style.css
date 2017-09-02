@@ -1,0 +1,67 @@
+* {
+   outline: 1px solid red !important;
+}
+
+/* * {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+}  */
+
+/* .div {
+    display: -webkit-flex;
+    display: flex;
+}  */
+
+@media (min-width:300px) {
+
+    .logo {
+        height: 50px;
+        margin-top: 1em; 
+    }
+
+    .my-name {
+        font-size: 30px;
+    }
+
+    .aka {
+        font-size: 18px;
+    }
+
+    .sub-text {
+        font-size: 12px;
+    }
+
+    .link {
+        visibility: collapse;
+    }
+}
+
+@media (min-width:700px) {
+    .logo {
+        height: 80px;
+        margin-top: 1em;
+    }
+
+    .link {
+        visibility: collapse;
+    }
+}
+
+.header {
+
+}
+
+.aka {
+    font-family: 'Roboto Slab', serif;
+}
+
+.main {
+
+}
+
+.hooter {
+
+}
+
