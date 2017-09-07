@@ -1,0 +1,24 @@
+@media screen and (min-width: 0px) and (max-width : 800px){
+    .main-text {
+        font-size:20px;
+    }
+}
+@media screen and (min-width: 801px){
+    .main-text {
+        font-size:25px;
+    }
+}
+
+.aka {
+    font-family: 'Roboto Slab', serif;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+.main-text {
+    font-family: 'Bitter', serif;
+}    
+
+.sub-text {
+    font-family: 'Bitter', serif;
+}
