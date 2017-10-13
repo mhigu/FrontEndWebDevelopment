@@ -72,10 +72,10 @@ function handleCorrect(card1, card2){
 function handleIncorrect(card1, card2){
     card1.removeClass("open show").addClass("unmatch animation-unmatch");
     card2.removeClass("open show").addClass("unmatch animation-unmatch");
-    card1.delay(1300).queue(function(){
+    card1.delay(600).queue(function(){
         $(this).removeClass("unmatch animation-unmatch");
     });
-    card2.delay(1300).queue(function(){
+    card2.delay(600).queue(function(){
         $(this).removeClass("unmatch animation-unmatch");
     });
 }
@@ -97,10 +97,9 @@ function checkStars(count){
 }
 
 function checkWinOrLose(){
-    // if (win === 8){
-    //     modal.style.display = "block";
-    // }
-    $('[data-remodal-id=modal]').remodal();
+    var modalInstance = $.remodal.lookup[$('[data-remodal-id=notice]').data('remodal')];
+    modalInstance.open();
+    modalInstance.close();
 }
 
 function checkCorrectList(clsAttr){
