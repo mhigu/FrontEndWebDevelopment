@@ -81,6 +81,12 @@ h1 {
     font-size: 33px;
 }
 
+.deck .card.unmatch {
+    cursor: default;
+    background: #cc0245;
+    font-size: 33px;
+}
+
 /*
  * Styles for the Score Panel
  */
@@ -106,4 +112,53 @@ h1 {
 .score-panel .restart {
     float: right;
     cursor: pointer;
+}
+
+.animation-correct {
+    animation: 1.5s ease 0s 1 normal none running animation;
+}
+
+@keyframes animation {
+    0% {
+        transform: scale(.3);
+    }
+
+    50% {
+        transform: scale(.6) rotate(-45deg);
+        /* background: red; */
+    }
+
+    100% {
+        transform: scale(1) rotate(360deg);
+        border-radius: 0;
+        /* background: blue; */
+    }
+}
+
+.animation-unmatch {
+    animation: 1.5s ease 0s 1 normal none running swing;
+    /* transform-origin: top center;
+    animation-name: swing; */
+}
+
+@keyframes swing {
+    20% {
+      transform: rotate(15deg);
+    }
+  
+    40% {
+      transform: rotate(-10deg);
+    }
+  
+    60% {
+      transform: rotate(5deg);
+    }
+  
+    /* 80% {
+      transform: rotate(-5deg);
+    } */
+  
+    to {
+      transform: rotate(0deg);
+    }
 }
