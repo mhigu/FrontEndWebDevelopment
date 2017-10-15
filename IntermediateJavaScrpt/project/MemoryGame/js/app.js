@@ -20,6 +20,7 @@ let selectionList = [];
 let correctList = [];
 let counter = 0;
 let win = 0;
+let timer = 0;
 const starHTML = '<li><i class="fa fa-star"></i></li>';
 
 function shuffle(array) {
@@ -36,17 +37,26 @@ function shuffle(array) {
     return array;
 }
 
+function displayTimer(){
+    setInterval(function(){
+         $(".elapsed-time").text(timer++);
+        }, 1000);
+}
+
 function initializeCardHTML(){
     selectionList = [];
     correctList = [];
     counter = 0;
+    timer = 0;
     win = 0;
 
     let shuffledCards = shuffle(cards);
     const deckTag = $(".deck");
     const starsTag = $(".stars");
+    const timerTag = $(".elapsed-time");
     deckTag.empty();
     starsTag.empty();
+    timerTag.text(timer);
     for (let card of cards){
         deckTag.append(`<li class="card">\n    <i class="${card}">`);
     }
@@ -136,6 +146,8 @@ function createModal(){
 }
 
 $(initializeCardHTML());
+
+$(displayTimer());
 
 $(document).on("click", ".restart", initializeCardHTML);
 
