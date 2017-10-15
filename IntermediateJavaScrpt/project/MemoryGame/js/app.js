@@ -1,4 +1,4 @@
-const cards = [
+ const cards = [ // Definition of cards class(html class).
     "fa fa-diamond",
     "fa fa-paper-plane-o",
     "fa fa-anchor", 
@@ -23,6 +23,10 @@ let win = 0;
 let timer = 0;
 const starHTML = '<li><i class="fa fa-star"></i></li>';
 
+/**
+ * Shuffling value order of element in array.
+ * @param {Array[Any]} array 
+ */
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
 
@@ -37,12 +41,19 @@ function shuffle(array) {
     return array;
 }
 
+/**
+ * Display(update) second in html.
+ */
 function displayTimer(){
     setInterval(function(){
          $(".elapsed-time").text(timer++);
         }, 1000);
 }
 
+/**
+ * Initialize HTML for game.
+ * This function is also used in `refresh` button.
+ */
 function initializeCardHTML(){
     selectionList = [];
     correctList = [];
@@ -60,16 +71,26 @@ function initializeCardHTML(){
     for (let card of cards){
         deckTag.append(`<li class="card">\n    <i class="${card}">`);
     }
-    $(".moves").text(counter);
-    $(".stars").append(starHTML.repeat(3));
+    $(".moves").text(counter);  // reset move
+    $(".stars").append(starHTML.repeat(3));  // reset star
 }
 
+/**
+ * This function check the selections are correct or not
+ * using ther children class(like fa-xxx and fa-xxx).
+ * @param {Array[HTMLElement]} cardList 
+ */
 function isCorrect(cardList){
     let card1Class = cardList[0].children().attr("class");
     let card2Class = cardList[1].children().attr("class");
     return card1Class == card2Class;
 }
 
+/**
+ * Update HTML class for correct selection.
+ * @param {HTMLElement} card1 
+ * @param {HTMLElement} card2 
+ */
 function handleCorrect(card1, card2){
     card1.removeClass("open show").addClass("match animation-correct");
     card2.removeClass("open show").addClass("match animation-correct");
@@ -77,6 +98,14 @@ function handleCorrect(card1, card2){
     win += 1;
 }
 
+/**
+ * Update HTML class for incorrect selection.
+ * There is two step.
+ * 1. incorrect animation.
+ * 2. make it back to priginal class. 
+ * @param {HTMLElement} card1 
+ * @param {HTMLElement} card2 
+ */
 function handleIncorrect(card1, card2){
     card1.removeClass("open show").addClass("unmatch animation-unmatch");
     card2.removeClass("open show").addClass("unmatch animation-unmatch");
@@ -88,14 +117,26 @@ function handleIncorrect(card1, card2){
     }, 1000);
 }
 
+/**
+ * Update moves count.
+ * @param {Number} count 
+ */
 function updateCount(count){
     $(".moves").text(count);
 }
 
+/**
+ * Update star count.
+ * @param {Number} starCount 
+ */
 function updateStarts(starCount){
     $(".stars").empty().append(starHTML.repeat(starCount));
 }
 
+/**
+ * Check star criteria and update it if it's necessary.
+ * @param {Number} count 
+ */
 function checkStars(count){
     if(count > 21 && count < 30){
         updateStarts(2);
@@ -104,10 +145,18 @@ function checkStars(count){
     }
 }
 
+/**
+ * Check selected item is already exist in answered list.
+ * @param {HTMLClassAttr} clsAttr 
+ */
 function checkCorrectList(clsAttr){
     return correctList.includes(clsAttr);
 }
 
+/**
+ * Check selected item is same as itself.
+ * @param {HTMLElement} item 
+ */
 function isSameItem(item){
     if (selectionList.length === 1 && (selectionList[0].index() === item.index())){
         return true;
@@ -118,13 +167,20 @@ function isSameItem(item){
     }
 }
 
+/**
+ * Check player win the game or not.
+ */
 function checkWin(){
     if (win === 8){
         createModal();
     }
 }
 
+/**
+ * Create modal when player won the game.
+ */
 function createModal(){
+    // initialize modal
     let modal = new tingle.modal({
         footer: true,
         stickyFooter: false,
