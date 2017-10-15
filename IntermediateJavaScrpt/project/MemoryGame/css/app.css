@@ -115,7 +115,7 @@ h1 {
 }
 
 .animation-correct {
-    animation: 0.9 s ease 0s 1 normal none running animation;
+    animation: 0.5s ease 0s 1 normal none running animation;
 }
 
 @keyframes animation {

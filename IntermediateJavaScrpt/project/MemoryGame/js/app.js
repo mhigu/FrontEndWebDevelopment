@@ -38,6 +38,7 @@ function shuffle(array) {
 
 function initializeCardHTML(){
     selectionList = [];
+    correctList = [];
     counter = 0;
     win = 0;
 
@@ -53,8 +54,6 @@ function initializeCardHTML(){
     $(".stars").append(starHTML.repeat(3));
 }
 
-$(initializeCardHTML());
-
 function isCorrect(cardList){
     let card1Class = cardList[0].children().attr("class");
     let card2Class = cardList[1].children().attr("class");
@@ -65,19 +64,18 @@ function handleCorrect(card1, card2){
     card1.removeClass("open show").addClass("match animation-correct");
     card2.removeClass("open show").addClass("match animation-correct");
     correctList.push(card1.children().attr("class"));
-    console.log(correctList);
     win += 1;
 }
 
 function handleIncorrect(card1, card2){
     card1.removeClass("open show").addClass("unmatch animation-unmatch");
     card2.removeClass("open show").addClass("unmatch animation-unmatch");
-    card1.delay(600).queue(function(){
-        $(this).removeClass("unmatch animation-unmatch");
-    });
-    card2.delay(600).queue(function(){
-        $(this).removeClass("unmatch animation-unmatch");
-    });
+    setTimeout(function() {
+        card1.removeClass().addClass("card");
+    }, 1000);
+    setTimeout(function() {
+        card2.removeClass().addClass("card");
+    }, 1000);
 }
 
 function updateCount(count){
@@ -96,21 +94,64 @@ function checkStars(count){
     }
 }
 
-function checkWinOrLose(){
-    var modalInstance = $.remodal.lookup[$('[data-remodal-id=notice]').data('remodal')];
-    modalInstance.open();
-    modalInstance.close();
-}
-
 function checkCorrectList(clsAttr){
     return correctList.includes(clsAttr);
 }
 
-function main(selection){
-    counter += 1;
-    selectionList.push(selection);
-    selection.addClass("open show");
+function isSameItem(item){
+    if (selectionList.length === 1 && (selectionList[0].index() === item.index())){
+        return true;
+    }
 
+    if (correctList.includes(item.children().attr("class"))){
+        return true;
+    }
+}
+
+function checkWin(){
+    if (win === 8){
+        createModal();
+    }
+}
+
+function createModal(){
+    let modal = new tingle.modal({
+        footer: true,
+        stickyFooter: false,
+        closeMethods: ["overlay", "button", "escape"],
+        closeLabel: "Close",
+        cssClass: ["custom-class-1", "custom-class-2"],
+    });
+    
+    modal.setContent(`Congratulations! You won!\nWith ${$(".moves").text()} moves. You got ${$(".fa-star").size()} stars.`);
+    modal.addFooterBtn("Play again!", "tingle-btn tingle-btn--primary", function() {
+        // here goes some logic
+        initializeCardHTML();
+        modal.close();
+    });
+    
+    // open modal
+    modal.open();
+    
+}
+
+$(initializeCardHTML());
+
+$(document).on("click", ".restart", initializeCardHTML);
+
+$(document).on("click", ".card", function(){
+
+    let selectedItem = $(this);
+    
+    if (isSameItem(selectedItem)){
+        return;
+    }
+
+    selectionList.push(selectedItem);
+    selectedItem.addClass("open show");
+    counter += 1;
+    updateCount(counter);
+    
     if (selectionList.length ===2){
         if (isCorrect(selectionList)){
             handleCorrect(selectionList[0], selectionList[1]);
@@ -120,27 +161,6 @@ function main(selection){
         selectionList = [];
     }
 
-    // $(".moves").text(counter);
-    updateCount(counter);
     checkStars(counter);
-    checkWinOrLose();
-}
-
-$(document).on("click", ".card", function(){
-
-    let selectedItem = $(this);
-    if (checkCorrectList(selectedItem.children().attr("class"))){
-        return;
-    }
-    if (selectionList.length === 1){
-        if (selectionList[0].index() === selectedItem.index()){
-            return;
-        } else {
-            main(selectedItem);
-        }
-    } else {
-        main(selectedItem);
-    }
+    checkWin();
 });
-
-$(document).on("click", ".restart", initializeCardHTML);
