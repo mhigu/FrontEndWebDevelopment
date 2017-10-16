@@ -21,10 +21,11 @@ let correctList = [];
 let counter = 0;
 let win = 0;
 let timer = 0;
+let timerID;
 const starHTML = '<li><i class="fa fa-star"></i></li>';
 
 /**
- * Shuffling value order of element in array.
+ * @description Shuffling value order of element in array.
  * @param {Array[Any]} array 
  */
 function shuffle(array) {
@@ -42,17 +43,28 @@ function shuffle(array) {
 }
 
 /**
- * Display(update) second in html.
+ * @description Updating time.
  */
-function displayTimer(){
-    setInterval(function(){
-         $(".elapsed-time").text(timer++);
-        }, 1000);
+function updateTime(){
+    $(".elapsed-time").text(timer++);
 }
 
 /**
- * Initialize HTML for game.
- * This function is also used in `refresh` button.
+ * @description Start count-up timer.
+ */
+function startTimer(){
+    timerID = setInterval(updateTime, 1000);
+}
+
+/**
+ * @description Stop updating time.
+ */
+function stopTimer(){
+    clearInterval(timerID);
+}
+
+/**
+ * @description Initialize HTML for game.  This function is also used in `refresh` button.
  */
 function initializeCardHTML(){
     selectionList = [];
@@ -60,6 +72,8 @@ function initializeCardHTML(){
     counter = 0;
     timer = 0;
     win = 0;
+
+    startTimer();
 
     let shuffledCards = shuffle(cards);
     const deckTag = $(".deck");
@@ -76,8 +90,7 @@ function initializeCardHTML(){
 }
 
 /**
- * This function check the selections are correct or not
- * using ther children class(like fa-xxx and fa-xxx).
+ * @description This function check the selections are correct or not using ther children class(like fa-xxx and fa-xxx).
  * @param {Array[HTMLElement]} cardList 
  */
 function isCorrect(cardList){
@@ -87,7 +100,7 @@ function isCorrect(cardList){
 }
 
 /**
- * Update HTML class for correct selection.
+ * @description Update HTML class for correct selection.
  * @param {HTMLElement} card1 
  * @param {HTMLElement} card2 
  */
@@ -99,7 +112,7 @@ function handleCorrect(card1, card2){
 }
 
 /**
- * Update HTML class for incorrect selection.
+ * @description Update HTML class for incorrect selection.
  * There is two step.
  * 1. incorrect animation.
  * 2. make it back to priginal class. 
@@ -118,7 +131,7 @@ function handleIncorrect(card1, card2){
 }
 
 /**
- * Update moves count.
+ * @description Update moves count.
  * @param {Number} count 
  */
 function updateCount(count){
@@ -126,7 +139,7 @@ function updateCount(count){
 }
 
 /**
- * Update star count.
+ * @description Update star count.
  * @param {Number} starCount 
  */
 function updateStarts(starCount){
@@ -134,7 +147,7 @@ function updateStarts(starCount){
 }
 
 /**
- * Check star criteria and update it if it's necessary.
+ * @description Check star criteria and update it if it's necessary.
  * @param {Number} count 
  */
 function checkStars(count){
@@ -146,7 +159,7 @@ function checkStars(count){
 }
 
 /**
- * Check selected item is already exist in answered list.
+ * @description Check selected item is already exist in answered list.
  * @param {HTMLClassAttr} clsAttr 
  */
 function checkCorrectList(clsAttr){
@@ -154,7 +167,7 @@ function checkCorrectList(clsAttr){
 }
 
 /**
- * Check selected item is same as itself.
+ * @description Check selected item is same as itself.
  * @param {HTMLElement} item 
  */
 function isSameItem(item){
@@ -168,16 +181,17 @@ function isSameItem(item){
 }
 
 /**
- * Check player win the game or not.
+ * @description Check player win the game or not.
  */
 function checkWin(){
     if (win === 8){
+        stopTimer();
         createModal();
     }
 }
 
 /**
- * Create modal when player won the game.
+ * @description Create modal when player won the game.
  */
 function createModal(){
     // initialize modal
@@ -189,7 +203,9 @@ function createModal(){
         cssClass: ["custom-class-1", "custom-class-2"],
     });
     
-    modal.setContent(`Congratulations! You won!\nWith ${$(".moves").text()} moves. You got ${$(".fa-star").size()} stars.`);
+    modal.setContent(`Congratulations! You won!\n
+    With ${$(".moves").text()} moves and ${$(".elapsed-time").text()} seconds. 
+    You got ${$(".fa-star").size()} stars.`);
     modal.addFooterBtn("Play again!", "tingle-btn tingle-btn--primary", function() {
         // here goes some logic
         initializeCardHTML();
@@ -203,24 +219,22 @@ function createModal(){
 
 $(initializeCardHTML());
 
-$(displayTimer());
-
 $(document).on("click", ".restart", initializeCardHTML);
 
 $(document).on("click", ".card", function(){
 
     let selectedItem = $(this);
-    
+
     if (isSameItem(selectedItem)){
         return;
     }
 
     selectionList.push(selectedItem);
     selectedItem.addClass("open show");
-    counter += 1;
-    updateCount(counter);
     
     if (selectionList.length ===2){
+        counter += 1;
+        updateCount(counter);
         if (isCorrect(selectionList)){
             handleCorrect(selectionList[0], selectionList[1]);
         } else {
