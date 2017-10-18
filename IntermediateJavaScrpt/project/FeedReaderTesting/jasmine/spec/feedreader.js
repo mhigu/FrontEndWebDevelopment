@@ -32,11 +32,36 @@ $(function() {
          * and that the URL is not empty.
          */
 
+        /**
+         * @description Check existance of key.
+         * @param {Object} obj
+         * @param {String} key
+         */
+        function existKey(obj, key){
+            return obj.hasOwnProperty(key);
+        }
+
+        /**
+         * @description Check existance of url value.
+         * @param {Object} obj 
+         * @param {String} key
+         */
+        function hasVale(obj, key){
+            return obj[key] !== '';
+        }
+
+        it ('url fefined and the value is not empty', function(){
+            expect(allFeeds.every(obj => existKey(obj, 'url'))).toBe(true);
+            expect(allFeeds.every(obj => hasVale(obj, 'url'))).toBe(true);
+        });
 
         /* TODO: Write a test that loops through each feed
          * in the allFeeds object and ensures it has a name defined
          * and that the name is not empty.
          */
+        it ('name fefined and the value is not empty', function(){
+            expect(allFeeds.every(obj => existKey(obj, 'name'))).toBe(true);
+        });
     });
 
 
