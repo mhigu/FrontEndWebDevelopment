@@ -123,7 +123,8 @@ $(function() {
          */
         var feedFirst = "";
         var feedSecond = "";
-
+        
+        // Setting up initial state
         beforeEach(function(done){
             loadFeed(0, function(){
                 feedFirst = $('.entry')[0].children[0];
@@ -132,7 +133,8 @@ $(function() {
         });
 
         it ('the content actually changes', function(done){
-            
+
+            // Setting up secondary state
             loadFeed(1, function(){
                 feedSecond = $('.entry')[0].children[0];
                 done();
