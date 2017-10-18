@@ -61,11 +61,13 @@ $(function() {
          */
         it ('name fefined and the value is not empty', function(){
             expect(allFeeds.every(obj => existKey(obj, 'name'))).toBe(true);
+            expect(allFeeds.every(obj => hasVale(obj, 'name'))).toBe(true);
         });
     });
 
 
     /* TODO: Write a new test suite named "The menu" */
+    describe('The menu', function(){
 
         /* TODO: Write a test that ensures the menu element is
          * hidden by default. You'll have to analyze the HTML and
@@ -73,12 +75,24 @@ $(function() {
          * hiding/showing of the menu element.
          */
 
-         /* TODO: Write a test that ensures the menu changes
-          * visibility when the menu icon is clicked. This test
-          * should have two expectations: does the menu display when
-          * clicked and does it hide when clicked again.
-          */
+        it ('has menu hidden', function(){
+            expect($(".menu-hidden").length).toBe(1);
+        });
 
+        /* TODO: Write a test that ensures the menu changes
+         * visibility when the menu icon is clicked. This test
+         * should have two expectations: does the menu display when
+         * clicked and does it hide when clicked again.
+         */
+        it ('changes visibility when the menu ison is clicked', function(){
+            $('.icon-list').click();
+            expect($('.menu-hidden').length).toBe(0);
+            $('.icon-list').click();
+            expect($('.menu-hidden').length).toBe(1);
+        });
+    });
+
+    
     /* TODO: Write a new test suite named "Initial Entries" */
 
         /* TODO: Write a test that ensures when the loadFeed
