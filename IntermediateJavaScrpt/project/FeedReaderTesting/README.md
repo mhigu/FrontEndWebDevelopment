@@ -4,6 +4,28 @@
 
 In this project I implement web-based application test suite for application that reads RSS feeds.
 
+## How to use
+
+1. clone git repository. (or down load it from [GitHub](https://github.com/mhigu/Udacity_FrontEndWebDeveloper))
+
+```bash
+git clone https://github.com/mhigu/Udacity_FrontEndWebDeveloper.git
+```
+
+2. move project directory
+
+```bash
+cd Udacity_FrontEndWebDeveloper/IntermediateJavaScrpt/project/FeedReaderTesting/
+```
+
+3. open index.html
+
+```bash
+open index.html
+```
+
+4. Take a look!
+
 ## What will I learn
 
 I will learn how to use Jasmine to write a number of tests against a pre-existing application. These will test the underlying business logic of the application as well as the event handling and DOM manipulation.
