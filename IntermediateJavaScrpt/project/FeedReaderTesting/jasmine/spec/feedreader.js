@@ -98,7 +98,7 @@ $(function() {
         // Setting up initial state
         beforeEach(function(done){
             loadFeed(0, function(){
-                feedFirst = $('.feed .entry-link')[0].href; // Get contents URL
+                feedFirst = $('.feed').html(); // Get contents URL
                 done();
             });
         });
@@ -107,12 +107,11 @@ $(function() {
 
             // Setting up secondary state
             loadFeed(1, function(){
-                feedSecond = $('.feed .entry-link')[1].href; // Get contents URL
+                feedSecond = $('.feed').html(); // Get contents URL
+                // Compare contents URL and should be diffrent.
+                expect(feedFirst !== feedSecond).toBe(true);
                 done();
             });
-            
-            // Compare contents URL and should be diffrent.
-            expect(feedFirst !== feedSecond).toBe(true);
         });
     });
 }());
