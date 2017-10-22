@@ -78,14 +78,11 @@ $(function() {
          * a single .entry element within the .feed container.
          */
         beforeEach(function(done){
-            loadFeed(0, function(){
-                done();
-            });
+            loadFeed(0, done);
         });
         
-        it ('There is at least a single .entry', function(done){
-            expect($('.feed .entry').length).toBeGreaterThan(1);
-            done();
+        it ('There is at least a single .entry', function(){
+            expect($('.feed .entry').length).toBeGreaterThan(0);
         });
     });
 
