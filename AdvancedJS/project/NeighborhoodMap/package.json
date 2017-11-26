@@ -2,7 +2,7 @@
   "name": "neighborhoodmap",
   "version": "1.0.0",
   "description": "",
-  "main": "js/app.js",
+  "main": "src/js/app.js",
   "dependencies": {
     "google-maps": "^3.2.1",
     "knockout": "^3.4.2"
