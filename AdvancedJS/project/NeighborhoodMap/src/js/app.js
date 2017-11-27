@@ -130,7 +130,7 @@ function initMap() {
 
   document.getElementById('show-listings').addEventListener('click', showListings);
   document.getElementById('hide-listings').addEventListener('click', hideListings);
-
+  // google.maps.event.addDomListener(window, 'resize', initialize);
 }
 
 // This function populates the infowindow when the marker is clicked. We'll only allow

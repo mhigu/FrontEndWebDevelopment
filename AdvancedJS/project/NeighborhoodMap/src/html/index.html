@@ -9,7 +9,7 @@
   </head>
   <body>
     <!-- Navigation bar -->
-    <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
+    <!-- <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
       <a class="navbar-brand" href="#">Navbar</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -39,17 +39,23 @@
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
       </div>
-    </nav>
+    </nav> -->
     <!-- main container -->
     <div class="container">
-      <div class="options-box">
-        <h1>Find Your New NYC Home</h1>
-        <div>
-          <input id="show-listings" type="button" value="Show Listings">
-          <input id="hide-listings" type="button" value="Hide Listings">
+      <div class="row">
+        <div class="options-box">
+          <h1>Find Your New NYC Home</h1>
+          <div>
+            <input id="show-listings" type="button" value="Show Listings">
+            <input id="hide-listings" type="button" value="Hide Listings">
+          </div>
         </div>
       </div>
-      <div id="map"></div> 
+      <div class="row main">
+        <div class="col-md-12">
+          <div id="map"></div>
+        </div>
+      </div>
     </div>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBxm68T9J9JmM7dYG2wgvNHarTL0KrEFBc&libraries=geometry&v=3&callback=initMap" async defer></script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
