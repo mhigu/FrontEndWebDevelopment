@@ -3,7 +3,7 @@ let map;
 
 function initMap() {
   // Create a styles array to use with the map.
-  var styles = [
+  const styles = [
     {
       featureType: 'water',
       stylers: [
@@ -78,9 +78,15 @@ function initMap() {
     mapTypeControl: false
   });
 
+  // This autocomplete is for use in the geocoder entry box.
+  const zoomAutocomplete = new google.maps.places.Autocomplete(
+    document.getElementById('zoom-to-area-text'));
+  //Bias the boundaries within the map for the zoom to area text.
+  zoomAutocomplete.bindTo('bounds', map);
+
   // These are the real estate listings that will be shown to the user.
   // Normally we'd have these in a database instead.
-  var locations = [
+  const locations = [
     {title: 'Park Ave Penthouse', location: {lat: 40.7713024, lng: -73.9632393}},
     {title: 'Chelsea Loft', location: {lat: 40.7444883, lng: -73.9949465}},
     {title: 'Union Square Open Floor Plan', location: {lat: 40.7347062, lng: -73.9895759}},
@@ -89,23 +95,23 @@ function initMap() {
     {title: 'Chinatown Homey Space', location: {lat: 40.7180628, lng: -73.9961237}}
   ];
 
-  var largeInfowindow = new google.maps.InfoWindow();
+  const largeInfowindow = new google.maps.InfoWindow();
 
 
   // Style the markers a bit. This will be our listing marker icon.
-  var defaultIcon = makeMarkerIcon('0091ff');
+  const defaultIcon = makeMarkerIcon('0091ff');
 
   // Create a "highlighted location" marker color for when the user
   // mouses over the marker.
-  var highlightedIcon = makeMarkerIcon('FFFF24');
+  const highlightedIcon = makeMarkerIcon('FFFF24');
 
   // The following group uses the location array to create an array of markers on initialize.
-  for (var i = 0; i < locations.length; i++) {
+  for (let i = 0; i < locations.length; i++) {
     // Get the position from the location array.
-    var position = locations[i].location;
-    var title = locations[i].title;
+    const position = locations[i].location;
+    const title = locations[i].title;
     // Create a marker per location, and put into markers array.
-    var marker = new google.maps.Marker({
+    const marker = new google.maps.Marker({
       position: position,
       title: title,
       animation: google.maps.Animation.DROP,
@@ -131,6 +137,9 @@ function initMap() {
   document.getElementById('show-listings').addEventListener('click', showListings);
   document.getElementById('hide-listings').addEventListener('click', hideListings);
   // google.maps.event.addDomListener(window, 'resize', initialize);
+  document.getElementById('zoom-to-area').addEventListener('click', function() {
+    zoomToArea();
+  });
 }
 
 // This function populates the infowindow when the marker is clicked. We'll only allow
@@ -146,25 +155,25 @@ function populateInfoWindow(marker, infowindow) {
     infowindow.addListener('closeclick', function() {
       infowindow.marker = null;
     });
-    var streetViewService = new google.maps.StreetViewService();
-    var radius = 50;
+    const streetViewService = new google.maps.StreetViewService();
+    const radius = 50;
     // In case the status is OK, which means the pano was found, compute the
     // position of the streetview image, then calculate the heading, then get a
     // panorama from that and set the options
     function getStreetView(data, status) {
       if (status == google.maps.StreetViewStatus.OK) {
-        var nearStreetViewLocation = data.location.latLng;
-        var heading = google.maps.geometry.spherical.computeHeading(
+        const nearStreetViewLocation = data.location.latLng;
+        const heading = google.maps.geometry.spherical.computeHeading(
           nearStreetViewLocation, marker.position);
           infowindow.setContent('<div>' + marker.title + '</div><div id="pano"></div>');
-          var panoramaOptions = {
+          const panoramaOptions = {
             position: nearStreetViewLocation,
             pov: {
               heading: heading,
               pitch: 30
             }
           };
-        var panorama = new google.maps.StreetViewPanorama(
+        const panorama = new google.maps.StreetViewPanorama(
           document.getElementById('pano'), panoramaOptions);
       } else {
         infowindow.setContent('<div>' + marker.title + '</div>' +
@@ -181,9 +190,9 @@ function populateInfoWindow(marker, infowindow) {
 
 // This function will loop through the markers array and display them all.
 function showListings() {
-  var bounds = new google.maps.LatLngBounds();
+  const bounds = new google.maps.LatLngBounds();
   // Extend the boundaries of the map for each marker and display the marker
-  for (var i = 0; i < markers.length; i++) {
+  for (let i = 0; i < markers.length; i++) {
     markers[i].setMap(map);
     bounds.extend(markers[i].position);
   }
@@ -192,7 +201,7 @@ function showListings() {
 
 // This function will loop through the listings and hide them all.
 function hideListings() {
-  for (var i = 0; i < markers.length; i++) {
+  for (let i = 0; i < markers.length; i++) {
     markers[i].setMap(null);
   }
 }
@@ -201,7 +210,7 @@ function hideListings() {
 // icon of that color. The icon will be 21 px wide by 34 high, have an origin
 // of 0, 0 and be anchored at 10, 34).
 function makeMarkerIcon(markerColor) {
-  var markerImage = new google.maps.MarkerImage(
+  const markerImage = new google.maps.MarkerImage(
     'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
     '|40|_|%E2%80%A2',
     new google.maps.Size(21, 34),
@@ -211,5 +220,33 @@ function makeMarkerIcon(markerColor) {
   return markerImage;
 }
 
+// This function takes the input value in the find nearby area text input
+// locates it, and then zooms into that area. This is so that the user can
+// show all listings, then decide to focus on one area of the map.
+function zoomToArea() {
+  // Initialize the geocoder.
+  const geocoder = new google.maps.Geocoder();
+  // Get the address or place that the user entered.
+  const address = document.getElementById('zoom-to-area-text').value;
+  // Make sure the address isn't blank.
+  if (address === '') {
+    window.alert('You must enter an area, or address.');
+  } else {
+    // Geocode the address/area entered to get the center. Then, center the map
+    // on it and zoom in
+    geocoder.geocode(
+      { address: address,
+        // componentRestrictions: {locality: 'New York'}
+      }, function(results, status) {
+        if (status == google.maps.GeocoderStatus.OK) {
+          map.setCenter(results[0].geometry.location);
+          map.setZoom(15);
+        } else {
+          window.alert('We could not find that location - try entering a more' +
+              ' specific place.');
+        }
+      });
+  }
+}
 
 // ko.applyBindings(new ClickCounterViewModel());
