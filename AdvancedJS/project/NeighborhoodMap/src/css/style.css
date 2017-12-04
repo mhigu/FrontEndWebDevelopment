@@ -34,7 +34,7 @@ hr {
   border: none;
 }
 
-.options-box {
+/* .options-box {
   background: #fff;
   border: 1px solid #999;
   border-radius: 3px;
@@ -43,7 +43,7 @@ hr {
   padding: 10px 10px 30px 10px;
   text-align: left;
   width: 340px; 
-}
+} */
 
 #pano {
   width: 200px;
