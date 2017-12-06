@@ -1,6 +1,10 @@
 const markers = [];
 let map;
 
+// Create placemarkers array to use in multiple functions to have control
+// over the number of places that show.
+const placeMarkers = [];
+
 function initMap() {
   // Create a styles array to use with the map.
   const styles = [
@@ -84,6 +88,11 @@ function initMap() {
   //Bias the boundaries within the map for the zoom to area text.
   zoomAutocomplete.bindTo('bounds', map);
 
+  // Create a searchbox in order to execute a place search
+  const searchBox = new google.maps.places.SearchBox(
+    document.getElementById('places-search'));
+  searchBox.setBounds(map.getBounds());
+
   // These are the real estate listings that will be shown to the user.
   // Normally we'd have these in a database instead.
   const locations = [
@@ -135,11 +144,21 @@ function initMap() {
   }
 
   document.getElementById('show-listings').addEventListener('click', showListings);
-  document.getElementById('hide-listings').addEventListener('click', hideListings);
+  document.getElementById('hide-listings').addEventListener('click', hideMarkers);
   // google.maps.event.addDomListener(window, 'resize', initialize);
   document.getElementById('zoom-to-area').addEventListener('click', function() {
     zoomToArea();
   });
+  // Listen for the event fired when the user selects a prediction from the
+  // picklist and retrieve more details for that place.
+  searchBox.addListener('places_changed', function() {
+    searchBoxPlaces(this);
+  });
+
+  // Listen for the event fired when the user selects a prediction and clicks
+  // "go" more details for that place.
+  document.getElementById('go-places').addEventListener('click', textSearchPlaces);
+        
 }
 
 // This function populates the infowindow when the marker is clicked. We'll only allow
@@ -200,8 +219,13 @@ function showListings() {
 }
 
 // This function will loop through the listings and hide them all.
-function hideListings() {
-  for (let i = 0; i < markers.length; i++) {
+// function hideListings() {
+//   for (let i = 0; i < markers.length; i++) {
+//     markers[i].setMap(null);
+//   }
+// }
+function hideMarkers(markers){
+  for (let i = 0; i < markers.length; i++){
     markers[i].setMap(null);
   }
 }
@@ -247,6 +271,60 @@ function zoomToArea() {
         }
       });
   }
+}
+
+function searchBoxPlaces(searchBox){
+  hideMarkers(placeMarkers);
+  const places = searchBox.getPlaces();
+  // For each place, getthe icon, name and location.
+  createMarkersForPlaces(places);
+  if (places.length == 0){
+    window.alert('We did not find any places matching that search!');
+  }
+}
+
+function textSearchPlaces(){
+  const bounds = map.getBounds();
+  hideMarkers(placeMarkers);
+  const placesService = new google.maps.places.PlacesService(map);
+  placesService.textSearch({
+    query: document.getElementById('places-search').value,
+    bounds: bounds
+  }, function(results, status){
+    if (status === google.maps.places.PlacesServiceStatus.OK){
+      createMarkersForPlaces(results);
+    }
+  });
+}
+
+function createMarkersForPlaces(places){
+  const bounds = new google.maps.LatLngBounds();
+  for (let i = 0; i < places.length; i++){
+    const place = places[i];
+    const icon = {
+      url: place.icon,
+      size: new google.maps.Size(35, 35),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(15, 34),
+      scaledSize: new google.maps.Size(25, 25)
+    };
+    // Create a marker for each place.
+    const marker = new google.maps.Marker({
+      map: map,
+      icon: icon,
+      title: place.name,
+      position: place.geometry.location,
+      id: place.id
+    });
+    placeMarkers.push(marker);
+    if (place.geometry.viewport) {
+      // Only geocodes have viewport.
+      bounds.union(place.geometry.viewport);
+    } else {
+      bounds.extend(place.geometry.location);
+    }
+  }
+  map.fitBounds(bounds);
 }
 
 // ko.applyBindings(new ClickCounterViewModel());
