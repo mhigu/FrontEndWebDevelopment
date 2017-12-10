@@ -1,4 +1,8 @@
 class RecommendablePlace{
+  /**
+   * Data class for this application
+   * @param {Object} locationObj Foursquare API response(locationData.response.venues)
+   */
   constructor(locationObj){
     this.id = locationObj.id;
     this.title = locationObj.name;
@@ -8,11 +12,19 @@ class RecommendablePlace{
 }
 
 class FourSquareSettings{
+  /**
+   * Class for handling something related to Foursquare stuff
+   */
   constructor(){
     // FIXME: Change to template
     this.endpointURLTemplate = "https://api.foursquare.com/v2/venues/search?ll=40.7243,-74.0018&limit=10&client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20170111";
   }
 
+  /**
+   * Return API endpoint URL for requested lat,lng combination.
+   * @param {Number} lat 
+   * @param {Number} lng 
+   */
   getEndpointURL(lat, lng){
     // FIXME: Create URL fomr template using arguments
     return this.endpointURLTemplate
