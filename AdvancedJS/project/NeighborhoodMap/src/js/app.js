@@ -1,3 +1,24 @@
+class RecommendablePlace{
+  constructor(locationObj){
+    this.id = locationObj.id;
+    this.title = locationObj.name;
+    this.location = locationObj.location;
+    this.formattedAddress = locationObj.location.formattedAddress;
+  }
+}
+
+class FourSquareSettings{
+  constructor(){
+    // FIXME: Change to template
+    this.endpointURLTemplate = "https://api.foursquare.com/v2/venues/search?ll=40.7243,-74.0018&limit=10&client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20170111";
+  }
+
+  getEndpointURL(lat, lng){
+    // FIXME: Create URL fomr template using arguments
+    return this.endpointURLTemplate
+  }
+}
+
 let map;
 
 // Create a new blank array for all the listing markers.
@@ -7,151 +28,102 @@ const markers = [];
 // over the number of places that show.
 const placeMarkers = [];
 
+// Foursquare stuff
+const foursquare = new FourSquareSettings();
+const locations = [];
+
 function initMap() {
-  // Create a styles array to use with the map.
-  const styles = [
-    {
-      featureType: 'water',
-      stylers: [
-        { color: '#19a0d8' }
-      ]
-    }, {
-      featureType: 'administrative',
-      elementType: 'labels.text.stroke',
-      stylers: [
-        { color: '#ffffff' },
-        { weight: 6 }
-      ]
-    }, {
-      featureType: 'administrative',
-      elementType: 'labels.text.fill',
-      stylers: [
-        { color: '#e85113' }
-      ]
-    }, {
-      featureType: 'road.highway',
-      elementType: 'geometry.stroke',
-      stylers: [
-        { color: '#efe9e4' },
-        { lightness: -40 }
-      ]
-    }, {
-      featureType: 'transit.station',
-      stylers: [
-        { weight: 9 },
-        { hue: '#e85113' }
-      ]
-    }, {
-      featureType: 'road.highway',
-      elementType: 'labels.icon',
-      stylers: [
-        { visibility: 'off' }
-      ]
-    }, {
-      featureType: 'water',
-      elementType: 'labels.text.stroke',
-      stylers: [
-        { lightness: 100 }
-      ]
-    }, {
-      featureType: 'water',
-      elementType: 'labels.text.fill',
-      stylers: [
-        { lightness: -100 }
-      ]
-    }, {
-      featureType: 'poi',
-      elementType: 'geometry',
-      stylers: [
-        { visibility: 'on' },
-        { color: '#f0e4d3' }
-      ]
-    }, {
-      featureType: 'road.highway',
-      elementType: 'geometry.fill',
-      stylers: [
-        { color: '#efe9e4' },
-        { lightness: -25 }
-      ]
-    }
-  ];
   // Constructor creates a new map - only center and zoom are required.
   map = new google.maps.Map(document.getElementById('map'), {
     center: { lat: 40.7413549, lng: -73.9980244 },
     zoom: 13,
-    styles: styles,
     mapTypeControl: false
   });
-  // This autocomplete is for use in the geocoder entry box.
-  const zoomAutocomplete = new google.maps.places.Autocomplete(
-    document.getElementById('zoom-to-area-text'));
-  // Bias the boundaries within the map for the zoom to area text.
-  zoomAutocomplete.bindTo('bounds', map);
-  // Create a searchbox in order to execute a places search
-  const searchBox = new google.maps.places.SearchBox(
-    document.getElementById('places-search'));
-  // Bias the searchbox to within the bounds of the map.
-  searchBox.setBounds(map.getBounds());
-  // These are the real estate listings that will be shown to the user.
-  // Normally we'd have these in a database instead.
-  const locations = [
-    { title: 'Park Ave Penthouse', location: { lat: 40.7713024, lng: -73.9632393 } },
-    { title: 'Chelsea Loft', location: { lat: 40.7444883, lng: -73.9949465 } },
-    { title: 'Union Square Open Floor Plan', location: { lat: 40.7347062, lng: -73.9895759 } },
-    { title: 'East Village Hip Studio', location: { lat: 40.7281777, lng: -73.984377 } },
-    { title: 'TriBeCa Artsy Bachelor Pad', location: { lat: 40.7195264, lng: -74.0089934 } },
-    { title: 'Chinatown Homey Space', location: { lat: 40.7180628, lng: -73.9961237 } }
-  ];
-  const largeInfowindow = new google.maps.InfoWindow();
-  // Style the markers a bit. This will be our listing marker icon.
-  const defaultIcon = makeMarkerIcon('0091ff');
-  // Create a "highlighted location" marker color for when the user
-  // mouses over the marker.
-  const highlightedIcon = makeMarkerIcon('FFFF24');
-  // The following group uses the location array to create an array of markers on initialize.
-  for (let i = 0; i < locations.length; i++) {
-    // Get the position from the location array.
-    const position = locations[i].location;
-    const title = locations[i].title;
-    // Create a marker per location, and put into markers array.
-    const marker = new google.maps.Marker({
-      position: position,
-      title: title,
-      animation: google.maps.Animation.DROP,
-      icon: defaultIcon,
-      id: i
+  
+  fetch(foursquare.getEndpointURL())
+  .catch(err => {
+    // this will fire when cors error/network error/etc... happened
+    console.log('CLIENT-ERR :', err);
+    throw new Error('Something goes wrong with internet access. Please retry later')
+  })
+  .then(res => {
+    // extract response from foursquare as json
+    return res.json()
+  })
+  .then(locationData => {
+    console.log(locationData.response.venues);
+
+    // initialize locationData list
+    locationData.response.venues.forEach(function(element) {
+      locations.push(new RecommendablePlace(element));
     });
-    // Push the marker to our array of markers.
-    markers.push(marker);
-    // Create an onclick event to open the large infowindow at each marker.
-    marker.addListener('click', function () {
-      populateInfoWindow(this, largeInfowindow);
+
+    // This autocomplete is for use in the geocoder entry box.
+    const zoomAutocomplete = new google.maps.places.Autocomplete(
+      document.getElementById('zoom-to-area-text'));
+    // Bias the boundaries within the map for the zoom to area text.
+    zoomAutocomplete.bindTo('bounds', map);
+    // Create a searchbox in order to execute a places search
+    const searchBox = new google.maps.places.SearchBox(
+      document.getElementById('places-search'));
+    // Bias the searchbox to within the bounds of the map.
+    searchBox.setBounds(map.getBounds());
+
+    const largeInfowindow = new google.maps.InfoWindow();
+    // Style the markers a bit. This will be our listing marker icon.
+    const defaultIcon = makeMarkerIcon('0091ff');
+    // Create a "highlighted location" marker color for when the user
+    // mouses over the marker.
+    const highlightedIcon = makeMarkerIcon('FFFF24');
+    // The following group uses the location array to create an array of markers on initialize.
+    for (let i = 0; i < locations.length; i++) {
+      // Get the position from the location array.
+      const position = locations[i].location;
+      const title = locations[i].title;
+      // Create a marker per location, and put into markers array.
+      const marker = new google.maps.Marker({
+        position: position,
+        title: title,
+        animation: google.maps.Animation.DROP,
+        icon: defaultIcon,
+        id: i
+      });
+      // Push the marker to our array of markers.
+      markers.push(marker);
+      // Create an onclick event to open the large infowindow at each marker.
+      marker.addListener('click', function () {
+        populateInfoWindow(this, largeInfowindow);
+      });
+      // Two event listeners - one for mouseover, one for mouseout,
+      // to change the colors back and forth.
+      marker.addListener('mouseover', function () {
+        this.setIcon(highlightedIcon);
+      });
+      marker.addListener('mouseout', function () {
+        this.setIcon(defaultIcon);
+      });
+    }
+    document.getElementById('show-listings').addEventListener('click', showListings);
+    document.getElementById('hide-listings').addEventListener('click', function () {
+      hideMarkers(markers);
     });
-    // Two event listeners - one for mouseover, one for mouseout,
-    // to change the colors back and forth.
-    marker.addListener('mouseover', function () {
-      this.setIcon(highlightedIcon);
+    document.getElementById('zoom-to-area').addEventListener('click', function () {
+      zoomToArea();
     });
-    marker.addListener('mouseout', function () {
-      this.setIcon(defaultIcon);
+    // Listen for the event fired when the user selects a prediction from the
+    // picklist and retrieve more details for that place.
+    searchBox.addListener('places_changed', function () {
+      searchBoxPlaces(this);
     });
-  }
-  document.getElementById('show-listings').addEventListener('click', showListings);
-  document.getElementById('hide-listings').addEventListener('click', function () {
-    hideMarkers(markers);
-  });
-  document.getElementById('zoom-to-area').addEventListener('click', function () {
-    zoomToArea();
-  });
-  // Listen for the event fired when the user selects a prediction from the
-  // picklist and retrieve more details for that place.
-  searchBox.addListener('places_changed', function () {
-    searchBoxPlaces(this);
-  });
-  // Listen for the event fired when the user selects a prediction and clicks
-  // "go" more details for that place.
-  document.getElementById('go-places').addEventListener('click', textSearchPlaces);
+    // Listen for the event fired when the user selects a prediction and clicks
+    // "go" more details for that place.
+    document.getElementById('go-places').addEventListener('click', textSearchPlaces);
+
+    }
+  )
+  .catch(err => console.log(err));
 }
+
 
 // This function populates the infowindow when the marker is clicked. We'll only allow
 // one infowindow which will open at the marker that is clicked, and populate based
