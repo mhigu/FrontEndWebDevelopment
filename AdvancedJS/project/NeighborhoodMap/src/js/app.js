@@ -8,6 +8,7 @@ class RecommendablePlace{
     this.title = locationObj.name;
     this.location = locationObj.location;
     this.formattedAddress = locationObj.location.formattedAddress;
+    this.formattedPhone = locationObj.contact.formattedPhone;
   }
 }
 
@@ -15,10 +16,6 @@ class FourSquareSettings{
   /**
    * Class for handling something related to Foursquare stuff
    */
-  constructor(){
-    // FIXME: Change to template
-    this.endpointURLTemplate = "https://api.foursquare.com/v2/venues/search?ll=40.7243,-74.0018&limit=10&client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20170111";
-  }
 
   /**
    * Return API endpoint URL for requested lat,lng combination.
@@ -26,8 +23,74 @@ class FourSquareSettings{
    * @param {Number} lng 
    */
   getEndpointURL(lat, lng){
-    // FIXME: Create URL fomr template using arguments
-    return this.endpointURLTemplate
+    return `https://api.foursquare.com/v2/venues/search?ll=${lat},${lng}&limit=10&client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20170111`;
+  }
+
+  /**
+   * Return API endpoint URL for place photos.
+   * @param {String} placeID 
+   */
+  getPhotoEndpointURL(placeID){
+    return `https://api.foursquare.com/v2/venues/${placeID}/photos?client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20171217`;
+  }
+
+  /**
+   * Return API endpoint URL for place tips
+   * @param {String} placeID 
+   */
+  getTipsEndpointURL(placeID){
+    return `https://api.foursquare.com/v2/venues/${placeID}/tips?client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20171217`;
+  }
+
+  /**
+   * Return image src URL from place ID.
+   * @param {String} placeID 
+   */
+  getImgSrc(placeID){
+    return fetch(foursquare.getPhotoEndpointURL(placeID))
+    .catch(err => {
+      // this will fire when cors error/network error/etc... happened
+      console.log('CLIENT-ERR :', err);
+      // throw new Error('Something goes wrong with internet access. Please retry later')
+      return '../img/no-image.jpg'
+    })
+    .then(res => {
+      // extract response from foursquare as json
+      return res.json()
+    })
+    .then(locationPhotos => {
+      if(locationPhotos.response.photos.count === 0){
+        // console.log('There is no image can get.');
+        return '../img/no-image.jpg'
+      } else {
+        let index = Math.floor(Math.random() * locationPhotos.response.photos.count);
+        let prefix = locationPhotos.response.photos.items[index].prefix;
+        let suffix = locationPhotos.response.photos.items[index].suffix;
+        // console.log(prefix + '900x400' + suffix);
+        return prefix + `900x400` + suffix;
+      }
+    });
+  }
+
+  /**
+   * Return location tips
+   * @param {String} placeID 
+   */
+  getLocationTips(placeID){
+    return fetch(foursquare.getTipsEndpointURL(placeID))
+    .catch(err => {
+      // this will fire when cors error/network error/etc... happened
+      console.log('CLIENT-ERR :', err);
+      // throw new Error('Something goes wrong with internet access. Please retry later')
+      return 'Could not get any tips due to network condition...';
+    })
+    .then(res => {
+      // extract response from foursquare as json
+      return res.json();
+    })
+    .then(locationTips => {
+      return locationTips.response.tips;
+    });
   }
 }
 
@@ -44,6 +107,35 @@ const placeMarkers = [];
 const foursquare = new FourSquareSettings();
 const locations = [];
 
+// ViewModel of knockout js.
+// This is used to bind data with html dynamically.
+const viewModel = {
+  srcURL: ko.observable('../img/no-image.jpg'),
+  message: ko.observable('Hello Knockout.js!!'),
+  selectedIndex: ko.observable(0),
+  locations: ko.observableArray(locations),
+  placeName: ko.observable('Name: No Place Name'),
+  contact: ko.observable('Contact: No contact'),
+  address: ko.observable('Adress: No address'),
+  reviews: ko.observableArray([]),
+  showInfo: function(placeObj){
+    foursquare.getImgSrc(placeObj.id)
+    .then(imgSrc => {
+      viewModel.srcURL(imgSrc);
+      viewModel.placeName('Name: ' + placeObj.title);
+      if (placeObj.formattedPhone){
+        viewModel.contact('Contact: ' + placeObj.formattedPhone);
+      }
+      if (placeObj.formattedAddress){
+        viewModel.address('Address: ' + placeObj.formattedAddress);
+      }
+      return true
+    })
+    .then(success => {return foursquare.getLocationTips(placeObj.id);})
+    .then(res => {viewModel.reviews(res.items);});
+  }
+};
+
 function initMap() {
   // Constructor creates a new map - only center and zoom are required.
   map = new google.maps.Map(document.getElementById('map'), {
@@ -52,7 +144,7 @@ function initMap() {
     mapTypeControl: false
   });
   
-  fetch(foursquare.getEndpointURL())
+  fetch(foursquare.getEndpointURL(40.7413549, -73.9980244))
   .catch(err => {
     // this will fire when cors error/network error/etc... happened
     console.log('CLIENT-ERR :', err);
@@ -105,6 +197,7 @@ function initMap() {
       // Create an onclick event to open the large infowindow at each marker.
       marker.addListener('click', function () {
         populateInfoWindow(this, largeInfowindow);
+        viewModel.showInfo(locations[i]);
       });
       // Two event listeners - one for mouseover, one for mouseout,
       // to change the colors back and forth.
@@ -131,6 +224,7 @@ function initMap() {
     // "go" more details for that place.
     document.getElementById('go-places').addEventListener('click', textSearchPlaces);
 
+    ko.applyBindings(viewModel);
     }
   )
   .catch(err => console.log(err));
@@ -356,7 +450,6 @@ function getPlacesDetails(marker, infowindow) {
   });
 }
 
-// ko.applyBindings(new ClickCounterViewModel());
 $(document).ready(function () {
   $('[data-toggle="offcanvas"]').click(function () {
     $('.row-offcanvas').toggleClass('active')
