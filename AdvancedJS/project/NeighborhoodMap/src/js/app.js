@@ -3,7 +3,8 @@ class RecommendablePlace{
    * Data class for this application
    * @param {Object} locationObj Foursquare API response(locationData.response.venues)
    */
-  constructor(locationObj){
+  constructor(locationObj, index){
+    this.index = index;
     this.id = locationObj.id;
     this.title = locationObj.name;
     this.location = locationObj.location;
@@ -106,6 +107,7 @@ const placeMarkers = [];
 // Foursquare stuff
 const foursquare = new FourSquareSettings();
 const locations = [];
+const largeInfoWindows = [];
 
 // ViewModel of knockout js.
 // This is used to bind data with html dynamically.
@@ -132,7 +134,13 @@ const viewModel = {
       return true
     })
     .then(success => {return foursquare.getLocationTips(placeObj.id);})
-    .then(res => {viewModel.reviews(res.items);});
+    .then(res => {
+      viewModel.reviews(res.items);
+      return true;
+    })
+    .then(res => {
+      populateInfoWindow(markers[placeObj.index], largeInfoWindows[placeObj.index]);
+    });
   }
 };
 
@@ -158,8 +166,11 @@ function initMap() {
     console.log(locationData.response.venues);
 
     // initialize locationData list
+    let index = 0;
     locationData.response.venues.forEach(function(element) {
-      locations.push(new RecommendablePlace(element));
+      locations.push(new RecommendablePlace(element, index));
+      index++;
+      console.log(locations);
     });
 
     // This autocomplete is for use in the geocoder entry box.
@@ -194,6 +205,7 @@ function initMap() {
       });
       // Push the marker to our array of markers.
       markers.push(marker);
+      largeInfoWindows.push(largeInfowindow);
       // Create an onclick event to open the large infowindow at each marker.
       marker.addListener('click', function () {
         populateInfoWindow(this, largeInfowindow);
