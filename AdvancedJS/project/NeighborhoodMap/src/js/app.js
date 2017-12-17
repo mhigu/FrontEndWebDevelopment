@@ -23,7 +23,7 @@ class FourSquareSettings{
    * @param {Number} lng 
    */
   getEndpointURL(lat, lng){
-    return `https://api.foursquare.com/v2/venues/search?ll=${lat},${lng}&limit=10&client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20170111`;
+    return `https://api.foursquare.com/v2/venues/search?ll=${lat},${lng}&limit=15&client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20170111`;
   }
 
   /**
@@ -208,10 +208,15 @@ function initMap() {
         this.setIcon(defaultIcon);
       });
     }
-    document.getElementById('show-listings').addEventListener('click', showListings);
-    document.getElementById('hide-listings').addEventListener('click', function () {
-      hideMarkers(markers);
-    });
+    // Show markers by default.
+    const bounds = new google.maps.LatLngBounds();
+    // Extend the boundaries of the map for each marker and display the marker
+    for (let i = 0; i < markers.length; i++) {
+      markers[i].setMap(map);
+      bounds.extend(markers[i].position);
+    }
+    map.fitBounds(bounds);
+
     document.getElementById('zoom-to-area').addEventListener('click', function () {
       zoomToArea();
     });
