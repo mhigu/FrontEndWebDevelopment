@@ -129,7 +129,7 @@ class FourSquareSettings{
 let map;
 
 // Create a new blank array for all the listing markers.
-const markers = [];
+// const markers = [];
 
 // Create placemarkers array to use in multiple functions to have control
 // over the number of places that show.
@@ -137,50 +137,55 @@ const placeMarkers = [];
 
 // Foursquare stuff
 const foursquare = new FourSquareSettings();
-const locations = [];
-const largeInfoWindows = [];
+// const locations = [];
+// const largeInfoWindows = [];
 
 // ViewModel of knockout js.
 // This is used to bind data with html dynamically.
-const viewModel = {
-  srcURL: ko.observable('../img/no-image.jpg'),
-  message: ko.observable('Hello Knockout.js!!'),
-  selectedIndex: ko.observable(0),
-  locations: ko.observableArray(locations),
-  placeName: ko.observable('Name: No Place Name'),
-  contact: ko.observable('Contact: No contact'),
-  address: ko.observable('Adress: No address'),
-  mostAgreedReview: ko.observable('Most agreed review: No review'),
-  reviews: ko.observableArray([]),
-  showInfo: function(placeObj){
+const viewModel = function() {
+  const self = this;
+  // this.placeMarkers = [];
+  this.markers = [];
+  this.largeInfoWindows = [];
+  this.srcURL = ko.observable('../img/no-image.jpg');
+  this.message = ko.observable('Hello Knockout.js!!');
+  this.selectedIndex = ko.observable(0);
+  this.locations = ko.observableArray();
+  this.placeName = ko.observable('Name: No Place Name');
+  this.contact = ko.observable('Contact: No contact');
+  this.address = ko.observable('Adress: No address');
+  this.mostAgreedReview = ko.observable('Most agreed review: No review');
+  this.reviews = ko.observableArray();
+  this.showInfo = function(placeObj){
     foursquare.getImgSrc(placeObj.id)
     .then(imgSrc => {
-      viewModel.srcURL(imgSrc);
-      viewModel.placeName('Name: ' + placeObj.title);
+      self.srcURL(imgSrc);
+      self.placeName('Name: ' + placeObj.title);
       if (placeObj.formattedPhone){
-        viewModel.contact('Contact: ' + placeObj.formattedPhone);
+        self.contact('Contact: ' + placeObj.formattedPhone);
       }
       if (placeObj.formattedAddress){
-        viewModel.address('Address: ' + placeObj.formattedAddress);
+        self.address('Address: ' + placeObj.formattedAddress);
       }
       if (placeObj.tips){
-        viewModel.mostAgreedReview('Most agreed review: ' + placeObj.tips[0].text);
+        self.mostAgreedReview('Most agreed review: ' + placeObj.tips[0].text);
       }
       return true
     })
     .then(success => {return foursquare.getLocationTips(placeObj.id);})
     .then(res => {
-      viewModel.reviews(res.items);
+      self.reviews(res.items);
       return true;
     })
     .then(res => {
-      populateInfoWindow(markers[placeObj.index], largeInfoWindows[placeObj.index]);
-    });
+      populateInfoWindow(self.markers[placeObj.index], self.largeInfoWindows[placeObj.index]);
+    })
   }
 };
 
 function initMap() {
   // Constructor creates a new map - only center and zoom are required.
+  const vm = new viewModel();  
   map = new google.maps.Map(document.getElementById('map'), {
     center: { lat: 40.7413549, lng: -73.9980244 },
     zoom: 13,
@@ -193,7 +198,7 @@ function initMap() {
     // initialize locationData list
     let index = 0;
     recommendedList.forEach(function(element) {
-      locations.push(
+      vm.locations.push(
         new RecommendablePlace(
           index, 
           element.venue.id, 
@@ -225,11 +230,12 @@ function initMap() {
     // Create a "highlighted location" marker color for when the user
     // mouses over the marker.
     const highlightedIcon = makeMarkerIcon('FFFF24');
+    // console.log(vm.locations());
     // The following group uses the location array to create an array of markers on initialize.
-    for (let i = 0; i < locations.length; i++) {
+    for (let i = 0; i < vm.locations().length; i++) {
       // Get the position from the location array.
-      const position = locations[i].location;
-      const title = locations[i].title;
+      const position = vm.locations()[i].location;
+      const title = vm.locations()[i].title;
       // Create a marker per location, and put into markers array.
       const marker = new google.maps.Marker({
         position: position,
@@ -239,12 +245,12 @@ function initMap() {
         id: i
       });
       // Push the marker to our array of markers.
-      markers.push(marker);
-      largeInfoWindows.push(largeInfowindow);
+      vm.markers.push(marker);
+      vm.largeInfoWindows.push(largeInfowindow);
       // Create an onclick event to open the large infowindow at each marker.
       marker.addListener('click', function () {
         populateInfoWindow(this, largeInfowindow);
-        viewModel.showInfo(locations[i]);
+        vm.showInfo(vm.locations()[i]);
       });
       // Two event listeners - one for mouseover, one for mouseout,
       // to change the colors back and forth.
@@ -258,9 +264,9 @@ function initMap() {
     // Show markers by default.
     const bounds = new google.maps.LatLngBounds();
     // Extend the boundaries of the map for each marker and display the marker
-    for (let i = 0; i < markers.length; i++) {
-      markers[i].setMap(map);
-      bounds.extend(markers[i].position);
+    for (let i = 0; i < vm.markers.length; i++) {
+      vm.markers[i].setMap(map);
+      bounds.extend(vm.markers[i].position);
     }
     map.fitBounds(bounds);
 
@@ -276,7 +282,7 @@ function initMap() {
     // "go" more details for that place.
     document.getElementById('go-places').addEventListener('click', textSearchPlaces);
 
-    ko.applyBindings(viewModel);
+    ko.applyBindings(vm);
     }
   )
   .catch(err => console.log(err));
@@ -329,15 +335,15 @@ function populateInfoWindow(marker, infowindow) {
   }
 }
 // This function will loop through the markers array and display them all.
-function showListings() {
-  const bounds = new google.maps.LatLngBounds();
-  // Extend the boundaries of the map for each marker and display the marker
-  for (let i = 0; i < markers.length; i++) {
-    markers[i].setMap(map);
-    bounds.extend(markers[i].position);
-  }
-  map.fitBounds(bounds);
-}
+// function showListings() {
+//   const bounds = new google.maps.LatLngBounds();
+//   // Extend the boundaries of the map for each marker and display the marker
+//   for (let i = 0; i < markers.length; i++) {
+//     markers[i].setMap(map);
+//     bounds.extend(markers[i].position);
+//   }
+//   map.fitBounds(bounds);
+// }
 // This function will loop through the listings and hide them all.
 function hideMarkers(markers) {
   for (let i = 0; i < markers.length; i++) {
