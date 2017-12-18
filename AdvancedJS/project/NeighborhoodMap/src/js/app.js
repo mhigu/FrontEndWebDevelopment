@@ -126,31 +126,18 @@ class FourSquareSettings{
   }
 }
 
-let map;
-
-// Create a new blank array for all the listing markers.
-// const markers = [];
-
-// Create placemarkers array to use in multiple functions to have control
-// over the number of places that show.
-const placeMarkers = [];
-
-// Foursquare stuff
-const foursquare = new FourSquareSettings();
-// const locations = [];
-// const largeInfoWindows = [];
-
 // ViewModel of knockout js.
 // This is used to bind data with html dynamically.
 const viewModel = function() {
   const self = this;
   // this.placeMarkers = [];
-  this.markers = [];
-  this.largeInfoWindows = [];
+  this.markers = ko.observableArray();
+  this.placeMarkers = ko.observableArray();
+  this.largeInfoWindows = ko.observableArray();
+  this.locations = ko.observableArray();
+  this.selectedIndex = ko.observable(0);
   this.srcURL = ko.observable('../img/no-image.jpg');
   this.message = ko.observable('Hello Knockout.js!!');
-  this.selectedIndex = ko.observable(0);
-  this.locations = ko.observableArray();
   this.placeName = ko.observable('Name: No Place Name');
   this.contact = ko.observable('Contact: No contact');
   this.address = ko.observable('Adress: No address');
@@ -178,21 +165,38 @@ const viewModel = function() {
       return true;
     })
     .then(res => {
-      populateInfoWindow(self.markers[placeObj.index], self.largeInfoWindows[placeObj.index]);
+      populateInfoWindow(self.markers()[placeObj.index], self.largeInfoWindows()[placeObj.index]);
     })
   }
 };
 
-function initMap() {
+const vm = new viewModel();
+ko.applyBindings(vm);
+
+let map;
+
+// Create a new blank array for all the listing markers.
+// const markers = [];
+
+// Create placemarkers array to use in multiple functions to have control
+// over the number of places that show.
+// const placeMarkers = [];
+
+// Foursquare stuff
+const foursquare = new FourSquareSettings();
+// const locations = [];
+// const largeInfoWindows = [];
+
+function initMap(lat=40.7413549, lng=-73.9980244) {
   // Constructor creates a new map - only center and zoom are required.
-  const vm = new viewModel();  
+  console.log('initmap')
   map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: 40.7413549, lng: -73.9980244 },
+    center: { lat: lat, lng: lng },
     zoom: 13,
     mapTypeControl: false
   });
 
-  foursquare.getRecommendablePlaces(40.7413549, -73.9980244)
+  foursquare.getRecommendablePlaces(lat, lng)
   .then(recommendedList => {
     
     // initialize locationData list
@@ -245,8 +249,8 @@ function initMap() {
         id: i
       });
       // Push the marker to our array of markers.
-      vm.markers.push(marker);
-      vm.largeInfoWindows.push(largeInfowindow);
+      vm.markers().push(marker);
+      vm.largeInfoWindows().push(largeInfowindow);
       // Create an onclick event to open the large infowindow at each marker.
       marker.addListener('click', function () {
         populateInfoWindow(this, largeInfowindow);
@@ -264,9 +268,9 @@ function initMap() {
     // Show markers by default.
     const bounds = new google.maps.LatLngBounds();
     // Extend the boundaries of the map for each marker and display the marker
-    for (let i = 0; i < vm.markers.length; i++) {
-      vm.markers[i].setMap(map);
-      bounds.extend(vm.markers[i].position);
+    for (let i = 0; i < vm.markers().length; i++) {
+      vm.markers()[i].setMap(map);
+      bounds.extend(vm.markers()[i].position);
     }
     map.fitBounds(bounds);
 
@@ -282,12 +286,18 @@ function initMap() {
     // "go" more details for that place.
     document.getElementById('go-places').addEventListener('click', textSearchPlaces);
 
-    ko.applyBindings(vm);
     }
   )
   .catch(err => console.log(err));
 }
 
+// function reloadMap(lat, lng) {
+//   map = new google.maps.Map(document.getElementById('map'), {
+//     center: { lat: lat, lng: lng },
+//     zoom: 13,
+//     mapTypeControl: false
+//   });
+// }
 
 // This function populates the infowindow when the marker is clicked. We'll only allow
 // one infowindow which will open at the marker that is clicked, and populate based
@@ -386,6 +396,13 @@ function zoomToArea() {
         if (status == google.maps.GeocoderStatus.OK) {
           map.setCenter(results[0].geometry.location);
           map.setZoom(15);
+          console.log(results[0].geometry.location.lat());
+          console.log(results[0].geometry.location.lng());
+          vm.locations.removeAll();
+          vm.markers.removeAll();
+          vm.largeInfoWindows.removeAll();
+          vm.placeMarkers.removeAll();
+          initMap(results[0].geometry.location.lat(), results[0].geometry.location.lng());
         } else {
           window.alert('We could not find that location - try entering a more' +
             ' specific place.');
@@ -397,7 +414,7 @@ function zoomToArea() {
 // This function fires when the user selects a searchbox picklist item.
 // It will do a nearby search using the selected query string or place.
 function searchBoxPlaces(searchBox) {
-  hideMarkers(placeMarkers);
+  hideMarkers(vm.placeMarkers);
   const places = searchBox.getPlaces();
   if (places.length === 0) {
     window.alert('We did not find any places matching that search!');
@@ -410,7 +427,7 @@ function searchBoxPlaces(searchBox) {
 // It will do a nearby search using the entered query string or place.
 function textSearchPlaces() {
   const bounds = map.getBounds();
-  hideMarkers(placeMarkers);
+  hideMarkers(vm.placeMarkers);
   const placesService = new google.maps.places.PlacesService(map);
   placesService.textSearch({
     query: document.getElementById('places-search').value,
@@ -452,7 +469,7 @@ function createMarkersForPlaces(places) {
         getPlacesDetails(this, placeInfoWindow);
       }
     });
-    placeMarkers.push(marker);
+    vm.placeMarkers.push(marker);
     if (place.geometry.viewport) {
       // Only geocodes have viewport.
       bounds.union(place.geometry.viewport);
