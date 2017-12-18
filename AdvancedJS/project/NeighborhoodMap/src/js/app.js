@@ -1,15 +1,25 @@
 class RecommendablePlace{
   /**
    * Data class for this application
-   * @param {Object} locationObj Foursquare API response(locationData.response.venues)
+   * @param {Number} index 
+   * @param {String} id 
+   * @param {String} title 
+   * @param {Array} formattedAddress 
+   * @param {String} formattedPhone 
+   * @param {Array} tips 
+   * @param {Array} categories
+   * @param {Object} location 
    */
-  constructor(locationObj, index){
+
+   constructor(index, id, title, formattedAddress, formattedPhone, tips, categories, location){
     this.index = index;
-    this.id = locationObj.id;
-    this.title = locationObj.name;
-    this.location = locationObj.location;
-    this.formattedAddress = locationObj.location.formattedAddress;
-    this.formattedPhone = locationObj.contact.formattedPhone;
+    this.id = id;
+    this.title = title;
+    this.formattedAddress = formattedAddress;
+    this.formattedPhone = formattedPhone;
+    this.tips = tips;
+    this.category = categories;
+    this.location = location;
   }
 }
 
@@ -23,8 +33,12 @@ class FourSquareSettings{
    * @param {Number} lat 
    * @param {Number} lng 
    */
-  getEndpointURL(lat, lng){
+  getSearchEndpointURL(lat, lng){
     return `https://api.foursquare.com/v2/venues/search?ll=${lat},${lng}&limit=15&client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20170111`;
+  }
+
+  getRecommendEndpointURL(lat, lng){
+    return `https://api.foursquare.com/v2/venues/explore?ll=${lat},${lng}&limit=15&client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20170111`;
   }
 
   /**
@@ -41,6 +55,23 @@ class FourSquareSettings{
    */
   getTipsEndpointURL(placeID){
     return `https://api.foursquare.com/v2/venues/${placeID}/tips?client_id=JXEWEERS5WEIEZE2XBMY2OBVBTH0MMD2BEESEMTZG22M4ZMD&client_secret=WKR2HGCHNFJQFVBOCJLNMOIZWCLFZO2J5QVOAN1CMBYQPUBU&v=20171217`;
+  }
+
+  getRecommendablePlaces(lat, lng){
+    return fetch(foursquare.getRecommendEndpointURL(lat, lng))
+    .catch(err => {
+      // this will fire when cors error/network error/etc... happened
+      console.log('CLIENT-ERR :', err);
+      // throw new Error('Something goes wrong with internet access. Please retry later')
+      return [];
+    })
+    .then(res => {
+      return res.json();
+    })
+    .then(recommends => {
+      console.log(recommends);
+      return recommends.response.groups[0].items;
+    })
   }
 
   /**
@@ -119,6 +150,7 @@ const viewModel = {
   placeName: ko.observable('Name: No Place Name'),
   contact: ko.observable('Contact: No contact'),
   address: ko.observable('Adress: No address'),
+  mostAgreedReview: ko.observable('Most agreed review: No review'),
   reviews: ko.observableArray([]),
   showInfo: function(placeObj){
     foursquare.getImgSrc(placeObj.id)
@@ -130,6 +162,9 @@ const viewModel = {
       }
       if (placeObj.formattedAddress){
         viewModel.address('Address: ' + placeObj.formattedAddress);
+      }
+      if (placeObj.tips){
+        viewModel.mostAgreedReview('Most agreed review: ' + placeObj.tips[0].text);
       }
       return true
     })
@@ -151,26 +186,26 @@ function initMap() {
     zoom: 13,
     mapTypeControl: false
   });
-  
-  fetch(foursquare.getEndpointURL(40.7413549, -73.9980244))
-  .catch(err => {
-    // this will fire when cors error/network error/etc... happened
-    console.log('CLIENT-ERR :', err);
-    throw new Error('Something goes wrong with internet access. Please retry later')
-  })
-  .then(res => {
-    // extract response from foursquare as json
-    return res.json()
-  })
-  .then(locationData => {
-    console.log(locationData.response.venues);
 
+  foursquare.getRecommendablePlaces(40.7413549, -73.9980244)
+  .then(recommendedList => {
+    
     // initialize locationData list
     let index = 0;
-    locationData.response.venues.forEach(function(element) {
-      locations.push(new RecommendablePlace(element, index));
+    recommendedList.forEach(function(element) {
+      locations.push(
+        new RecommendablePlace(
+          index, 
+          element.venue.id, 
+          element.venue.name, 
+          element.venue.location.formattedAddress,
+          element.venue.contact.formattedPhone,
+          element.tips,
+          element.venue.categories,
+          element.venue.location
+        )
+      );
       index++;
-      console.log(locations);
     });
 
     // This autocomplete is for use in the geocoder entry box.
