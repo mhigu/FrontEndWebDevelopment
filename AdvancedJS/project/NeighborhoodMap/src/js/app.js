@@ -127,22 +127,24 @@ class FourSquareSettings{
 }
 
 // ViewModel of knockout js.
-// This is used to bind data with html dynamically.
+// This is used to bind data with html.
 const viewModel = function() {
   const self = this;
-  // this.placeMarkers = [];
+  // wonder these should be observale.
   this.markers = ko.observableArray();
   this.placeMarkers = ko.observableArray();
   this.largeInfoWindows = ko.observableArray();
   this.locations = ko.observableArray();
   this.selectedIndex = ko.observable(0);
+  // variables binded to html
   this.srcURL = ko.observable('../img/no-image.jpg');
   this.message = ko.observable('Hello Knockout.js!!');
   this.placeName = ko.observable('Name: No Place Name');
   this.contact = ko.observable('Contact: No contact');
   this.address = ko.observable('Adress: No address');
-  this.mostAgreedReview = ko.observable('Most agreed review: No review');
+  this.topReview = ko.observable('Review: No review');
   this.reviews = ko.observableArray();
+  // functions
   this.showInfo = function(placeObj){
     foursquare.getImgSrc(placeObj.id)
     .then(imgSrc => {
@@ -155,7 +157,7 @@ const viewModel = function() {
         self.address('Address: ' + placeObj.formattedAddress);
       }
       if (placeObj.tips){
-        self.mostAgreedReview('Most agreed review: ' + placeObj.tips[0].text);
+        self.mostAgreedReview('Review: ' + placeObj.tips[0].text);
       }
       return true
     })
@@ -170,26 +172,17 @@ const viewModel = function() {
   }
 };
 
+// create viewModel instance
 const vm = new viewModel();
+// bind vm to html
 ko.applyBindings(vm);
 
 let map;
 
-// Create a new blank array for all the listing markers.
-// const markers = [];
-
-// Create placemarkers array to use in multiple functions to have control
-// over the number of places that show.
-// const placeMarkers = [];
-
-// Foursquare stuff
+// Foursquare stuff instance
 const foursquare = new FourSquareSettings();
-// const locations = [];
-// const largeInfoWindows = [];
 
 function initMap(lat=40.7413549, lng=-73.9980244) {
-  // Constructor creates a new map - only center and zoom are required.
-  console.log('initmap')
   map = new google.maps.Map(document.getElementById('map'), {
     center: { lat: lat, lng: lng },
     zoom: 13,
@@ -199,7 +192,7 @@ function initMap(lat=40.7413549, lng=-73.9980244) {
   foursquare.getRecommendablePlaces(lat, lng)
   .then(recommendedList => {
     
-    // initialize locationData list
+    // initialize RecommendablePlace list
     let index = 0;
     recommendedList.forEach(function(element) {
       vm.locations.push(
@@ -219,22 +212,29 @@ function initMap(lat=40.7413549, lng=-73.9980244) {
 
     // This autocomplete is for use in the geocoder entry box.
     const zoomAutocomplete = new google.maps.places.Autocomplete(
-      document.getElementById('zoom-to-area-text'));
+      document.getElementById('zoom-to-area-text')
+    );
+
     // Bias the boundaries within the map for the zoom to area text.
     zoomAutocomplete.bindTo('bounds', map);
+
     // Create a searchbox in order to execute a places search
     const searchBox = new google.maps.places.SearchBox(
-      document.getElementById('places-search'));
+      document.getElementById('places-search')
+    );
+
     // Bias the searchbox to within the bounds of the map.
     searchBox.setBounds(map.getBounds());
 
     const largeInfowindow = new google.maps.InfoWindow();
+
     // Style the markers a bit. This will be our listing marker icon.
     const defaultIcon = makeMarkerIcon('0091ff');
+
     // Create a "highlighted location" marker color for when the user
     // mouses over the marker.
     const highlightedIcon = makeMarkerIcon('FFFF24');
-    // console.log(vm.locations());
+
     // The following group uses the location array to create an array of markers on initialize.
     for (let i = 0; i < vm.locations().length; i++) {
       // Get the position from the location array.
@@ -265,39 +265,26 @@ function initMap(lat=40.7413549, lng=-73.9980244) {
         this.setIcon(defaultIcon);
       });
     }
+
     // Show markers by default.
     const bounds = new google.maps.LatLngBounds();
+
     // Extend the boundaries of the map for each marker and display the marker
     for (let i = 0; i < vm.markers().length; i++) {
       vm.markers()[i].setMap(map);
       bounds.extend(vm.markers()[i].position);
     }
+
     map.fitBounds(bounds);
 
-    document.getElementById('zoom-to-area').addEventListener('click', function () {
-      zoomToArea();
-    });
     // Listen for the event fired when the user selects a prediction from the
     // picklist and retrieve more details for that place.
     searchBox.addListener('places_changed', function () {
       searchBoxPlaces(this);
     });
-    // Listen for the event fired when the user selects a prediction and clicks
-    // "go" more details for that place.
-    document.getElementById('go-places').addEventListener('click', textSearchPlaces);
-
-    }
-  )
+  })
   .catch(err => console.log(err));
 }
-
-// function reloadMap(lat, lng) {
-//   map = new google.maps.Map(document.getElementById('map'), {
-//     center: { lat: lat, lng: lng },
-//     zoom: 13,
-//     mapTypeControl: false
-//   });
-// }
 
 // This function populates the infowindow when the marker is clicked. We'll only allow
 // one infowindow which will open at the marker that is clicked, and populate based
@@ -344,16 +331,7 @@ function populateInfoWindow(marker, infowindow) {
     infowindow.open(map, marker);
   }
 }
-// This function will loop through the markers array and display them all.
-// function showListings() {
-//   const bounds = new google.maps.LatLngBounds();
-//   // Extend the boundaries of the map for each marker and display the marker
-//   for (let i = 0; i < markers.length; i++) {
-//     markers[i].setMap(map);
-//     bounds.extend(markers[i].position);
-//   }
-//   map.fitBounds(bounds);
-// }
+
 // This function will loop through the listings and hide them all.
 function hideMarkers(markers) {
   for (let i = 0; i < markers.length; i++) {
@@ -482,6 +460,7 @@ function createMarkersForPlaces(places) {
 // This is the PLACE DETAILS search - it's the most detailed so it's only
 // executed when a marker is selected, indicating the user wants more
 // details about that place.
+// FIXME: remove
 function getPlacesDetails(marker, infowindow) {
   const service = new google.maps.places.PlacesService(map);
   service.getDetails({
@@ -526,6 +505,14 @@ function getPlacesDetails(marker, infowindow) {
 }
 
 $(document).ready(function () {
+
+  document.getElementById('zoom-to-area').addEventListener('click', function () {
+    zoomToArea();
+  });
+
+  // Listen for the event fired when the user selects a prediction and clicks
+  // "go" more details for that place.
+  document.getElementById('go-places').addEventListener('click', textSearchPlaces);
   $('[data-toggle="offcanvas"]').click(function () {
     $('.row-offcanvas').toggleClass('active')
   });
