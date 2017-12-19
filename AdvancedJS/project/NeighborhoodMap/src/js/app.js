@@ -135,8 +135,8 @@ const viewModel = function() {
   this.placeMarkers = ko.observableArray();
   this.largeInfoWindows = ko.observableArray();
   this.locations = ko.observableArray();
-  this.selectedIndex = ko.observable(0);
   // variables binded to html
+  this.query = ko.observable('');
   this.srcURL = ko.observable('../img/no-image.jpg');
   this.message = ko.observable('Hello Knockout.js!!');
   this.placeName = ko.observable('Name: No Place Name');
@@ -157,7 +157,7 @@ const viewModel = function() {
         self.address('Address: ' + placeObj.formattedAddress);
       }
       if (placeObj.tips){
-        self.mostAgreedReview('Review: ' + placeObj.tips[0].text);
+        self.topReview('Review: ' + placeObj.tips[0].text);
       }
       return true
     })
@@ -169,7 +169,13 @@ const viewModel = function() {
     .then(res => {
       populateInfoWindow(self.markers()[placeObj.index], self.largeInfoWindows()[placeObj.index]);
     })
-  }
+  };
+  this.searchResults = ko.computed(function() {
+    let q = self.query();
+    return self.locations().filter(function(recommendablePlace) {
+      return recommendablePlace.title.toLowerCase().indexOf(q) >= 0;
+    });
+  });
 };
 
 // create viewModel instance
