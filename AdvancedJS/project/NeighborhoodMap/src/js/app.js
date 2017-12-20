@@ -135,17 +135,30 @@ const viewModel = function() {
   this.placeMarkers = ko.observableArray();
   this.largeInfoWindows = ko.observableArray();
   this.locations = ko.observableArray();
+
   // variables binded to html
+  // search query
   this.query = ko.observable('');
+  // image source url which showed in place detail
   this.srcURL = ko.observable('../img/no-image.jpg');
-  this.message = ko.observable('Hello Knockout.js!!');
+  // place name which showed in place detail
   this.placeName = ko.observable('Name: No Place Name');
+  // place contact which showed in place detail
   this.contact = ko.observable('Contact: No contact');
+  // place address which showed in place detail
   this.address = ko.observable('Adress: No address');
+  // place top review which showed in place detail
   this.topReview = ko.observable('Review: No review');
+  // place reviews which showed in left side html
   this.reviews = ko.observableArray();
-  // functions
+  
+  /**
+   * handle DOM about recommendable place info in html
+   * @param {RecommendablePlace} placeObj 
+   */
   this.showInfo = function(placeObj){
+    // TODO: add active class when it's clicked.
+    // activateHTMLClass(placeObj.index);
     foursquare.getImgSrc(placeObj.id)
     .then(imgSrc => {
       self.srcURL(imgSrc);
@@ -170,10 +183,20 @@ const viewModel = function() {
       populateInfoWindow(self.markers()[placeObj.index], self.largeInfoWindows()[placeObj.index]);
     })
   };
+
+  /**
+   * Return serch query results
+   */
   this.searchResults = ko.computed(function() {
     let q = self.query();
-    return self.locations().filter(function(recommendablePlace) {
-      return recommendablePlace.title.toLowerCase().indexOf(q) >= 0;
+    return self.locations().filter((recommendablePlace, index) => {
+      if (recommendablePlace.title.toLowerCase().indexOf(q) >= 0){
+        showMarker(index);
+        return true;
+      }else{
+        hideMarker(index);
+        return false;
+      }
     });
   });
 };
@@ -251,6 +274,8 @@ function initMap(lat=40.7413549, lng=-73.9980244) {
       vm.largeInfoWindows().push(largeInfowindow);
       // Create an onclick event to open the large infowindow at each marker.
       marker.addListener('click', function () {
+        // TODO: add active class when it's clicked.
+        // activateHTMLClass(i);
         populateInfoWindow(this, largeInfowindow);
         vm.showInfo(vm.locations()[i]);
       });
@@ -262,6 +287,10 @@ function initMap(lat=40.7413549, lng=-73.9980244) {
       marker.addListener('mouseout', function () {
         this.setIcon(defaultIcon);
       });
+    }
+
+    if (vm.locations().length !==0){
+      vm.showInfo(vm.locations()[0]);
     }
 
     // Show markers by default.
@@ -278,9 +307,13 @@ function initMap(lat=40.7413549, lng=-73.9980244) {
   .catch(err => console.log(err));
 }
 
-// This function populates the infowindow when the marker is clicked. We'll only allow
-// one infowindow which will open at the marker that is clicked, and populate based
-// on that markers position.
+/**
+ * This function populates the infowindow when the marker is clicked. We'll only allow
+ * one infowindow which will open at the marker that is clicked, and populate based
+ * on that markers position.
+ * @param {google.maps.Marker} marker 
+ * @param {google.maps.Marker} infowindow 
+ */
 function populateInfoWindow(marker, infowindow) {
   // Check to make sure the infowindow is not already opened on this marker.
   if (infowindow.marker != marker) {
@@ -324,15 +357,30 @@ function populateInfoWindow(marker, infowindow) {
   }
 }
 
-// This function will loop through the listings and hide them all.
-function hideMarkers(markers) {
-  for (let i = 0; i < markers.length; i++) {
-    markers[i].setMap(null);
+/**
+ * This function will show marker with designated index.
+ * @param {Number} index 
+ */
+function showMarker(index) {
+  if (vm.markers().length !== 0){
+    vm.markers()[index].setMap(map);
   }
 }
-// This function takes in a COLOR, and then creates a new marker
-// icon of that color. The icon will be 21 px wide by 34 high, have an origin
-// of 0, 0 and be anchored at 10, 34).
+
+/**
+ * This function will hide marker with designated index.
+ * @param {Number} index 
+ */
+function hideMarker(index) {
+  vm.markers()[index].setMap(null);
+}
+
+/**
+ * This function takes in a COLOR, and then creates a new marker
+ * icon of that color. The icon will be 21 px wide by 34 high, have an origin
+ * of 0, 0 and be anchored at 10, 34).
+ * @param {String} markerColor rgb value
+ */
 function makeMarkerIcon(markerColor) {
   const markerImage = new google.maps.MarkerImage(
     'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|' + markerColor +
@@ -344,9 +392,11 @@ function makeMarkerIcon(markerColor) {
   return markerImage;
 }
 
-// This function takes the input value in the find nearby area text input
-// locates it, and then zooms into that area. This is so that the user can
-// show all listings, then decide to focus on one area of the map.
+/**
+ * This function takes the input value in the find nearby area text input
+ * locates it, and then zooms into that area. This is so that the user can
+ * show all listings, then decide to focus on one area of the map.
+ */
 function zoomToArea() {
   // Initialize the geocoder.
   const geocoder = new google.maps.Geocoder();
@@ -366,8 +416,7 @@ function zoomToArea() {
         if (status == google.maps.GeocoderStatus.OK) {
           map.setCenter(results[0].geometry.location);
           map.setZoom(15);
-          console.log(results[0].geometry.location.lat());
-          console.log(results[0].geometry.location.lng());
+          vm.query('');
           vm.locations.removeAll();
           vm.markers.removeAll();
           vm.largeInfoWindows.removeAll();
@@ -379,6 +428,15 @@ function zoomToArea() {
         }
       });
   }
+}
+
+/**
+ * activate clicked item
+ * @param {Number} index 
+ */
+function activateHTMLClass(index){
+  $('.list-group-item').removeClass('active');
+  $(`.list-group-item:eq(${index})`).addClass('active');
 }
 
 
