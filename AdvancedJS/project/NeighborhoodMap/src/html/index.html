@@ -12,49 +12,29 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
       <div class="container">
-        <a class="navbar-brand" href="#">Start Bootstrap</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarResponsive">
-          <ul class="navbar-nav ml-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="#">Home
-                <span class="sr-only">(current)</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Services</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Contact</a>
-            </li>
-          </ul>
-        </div>
+        <a class="navbar-brand" href="#">Find Recommendable Place!!</a>
+        <form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+              <input id="zoom-to-area-text" type="text" placeholder="Enter your favorite area!">
+              <button  id="zoom-to-area" type="submit">Search</button>
+            </div>
+        </form>
       </div>
     </nav>
 
     <!-- Page Content -->
     <div class="container">
-      <div class="card mt-4">
-        <h1>Find Your Favorite Place!!</h1>
-        <input class="form-control" data-bind="value: query, valueUpdate: 'keyup'" autocomplete="off">
-        <div>
-          <input id="zoom-to-area-text" type="text" placeholder="Enter your favorite area!">
-          <input id="zoom-to-area" type="button" value="Zoom">
-        </div>
-      </div>
       <div class="row main">
         <div class="col-md-12">
           <div id="map"></div>
         </div>
+        <div class="col-md-12">
+            <input class="form-control small-screen" data-bind="value: query, valueUpdate: 'keyup'" autocomplete="off" placeholder="Filter place with place name!">
+        </div>
       </div>
 
       <div class="row">
-        <div class="col-lg-3">
+        <div class="col-lg-3 small-screen">
           <h1 class="my-4">Recommendable Places</h1>
           <div class="list-group">
             <ul data-bind="foreach: searchResults">
@@ -73,12 +53,15 @@
               <h4 data-bind="text: contact"></h4>
               <h4 data-bind="text: address"></h4>
               <h5 data-bind="text: topReview"></h5>
+              <h6>all info provided from <a href="https://developer.foursquare.com">FourSquare</a></h6>
             </div>
           </div>
 
           <div class="card card-outline-secondary my-4">
             <div class="card-header">
               Other Place Reviews
+              <br>
+              (all info provided from <a href="https://developer.foursquare.com">FourSquare</a>)
             </div>
             <div class="card-body">
               <!-- ko foreach: reviews -->
