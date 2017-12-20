@@ -224,14 +224,6 @@ function initMap(lat=40.7413549, lng=-73.9980244) {
     // Bias the boundaries within the map for the zoom to area text.
     zoomAutocomplete.bindTo('bounds', map);
 
-    // Create a searchbox in order to execute a places search
-    const searchBox = new google.maps.places.SearchBox(
-      document.getElementById('places-search')
-    );
-
-    // Bias the searchbox to within the bounds of the map.
-    searchBox.setBounds(map.getBounds());
-
     const largeInfowindow = new google.maps.InfoWindow();
 
     // Style the markers a bit. This will be our listing marker icon.
@@ -282,12 +274,6 @@ function initMap(lat=40.7413549, lng=-73.9980244) {
     }
 
     map.fitBounds(bounds);
-
-    // Listen for the event fired when the user selects a prediction from the
-    // picklist and retrieve more details for that place.
-    searchBox.addListener('places_changed', function () {
-      searchBoxPlaces(this);
-    });
   })
   .catch(err => console.log(err));
 }
@@ -395,120 +381,6 @@ function zoomToArea() {
   }
 }
 
-// This function fires when the user selects a searchbox picklist item.
-// It will do a nearby search using the selected query string or place.
-function searchBoxPlaces(searchBox) {
-  hideMarkers(vm.placeMarkers);
-  const places = searchBox.getPlaces();
-  if (places.length === 0) {
-    window.alert('We did not find any places matching that search!');
-  } else {
-    // For each place, get the icon, name and location.
-    createMarkersForPlaces(places);
-  }
-}
-// This function firest when the user select "go" on the places search.
-// It will do a nearby search using the entered query string or place.
-function textSearchPlaces() {
-  const bounds = map.getBounds();
-  hideMarkers(vm.placeMarkers);
-  const placesService = new google.maps.places.PlacesService(map);
-  placesService.textSearch({
-    query: document.getElementById('places-search').value,
-    bounds: bounds
-  }, function (results, status) {
-    if (status === google.maps.places.PlacesServiceStatus.OK) {
-      createMarkersForPlaces(results);
-    }
-  });
-}
-// This function creates markers for each place found in either places search.
-function createMarkersForPlaces(places) {
-  const bounds = new google.maps.LatLngBounds();
-  for (let i = 0; i < places.length; i++) {
-    const place = places[i];
-    const icon = {
-      url: place.icon,
-      size: new google.maps.Size(35, 35),
-      origin: new google.maps.Point(0, 0),
-      anchor: new google.maps.Point(15, 34),
-      scaledSize: new google.maps.Size(25, 25)
-    };
-    // Create a marker for each place.
-    const marker = new google.maps.Marker({
-      map: map,
-      icon: icon,
-      title: place.name,
-      position: place.geometry.location,
-      id: place.place_id
-    });
-    // Create a single infowindow to be used with the place details information
-    // so that only one is open at once.
-    let placeInfoWindow = new google.maps.InfoWindow();
-    // If a marker is clicked, do a place details search on it in the next function.
-    marker.addListener('click', function () {
-      if (placeInfoWindow.marker === this) {
-        console.log("This infowindow already is on this marker!");
-      } else {
-        getPlacesDetails(this, placeInfoWindow);
-      }
-    });
-    vm.placeMarkers.push(marker);
-    if (place.geometry.viewport) {
-      // Only geocodes have viewport.
-      bounds.union(place.geometry.viewport);
-    } else {
-      bounds.extend(place.geometry.location);
-    }
-  }
-  map.fitBounds(bounds);
-}
-// This is the PLACE DETAILS search - it's the most detailed so it's only
-// executed when a marker is selected, indicating the user wants more
-// details about that place.
-// FIXME: remove
-function getPlacesDetails(marker, infowindow) {
-  const service = new google.maps.places.PlacesService(map);
-  service.getDetails({
-    placeId: marker.id
-  }, function (place, status) {
-    if (status === google.maps.places.PlacesServiceStatus.OK) {
-      // Set the marker property on this infowindow so it isn't created again.
-      infowindow.marker = marker;
-      let innerHTML = '<div>';
-      if (place.name) {
-        innerHTML += '<strong>' + place.name + '</strong>';
-      }
-      if (place.formatted_address) {
-        innerHTML += '<br>' + place.formatted_address;
-      }
-      if (place.formatted_phone_number) {
-        innerHTML += '<br>' + place.formatted_phone_number;
-      }
-      if (place.opening_hours) {
-        innerHTML += '<br><br><strong>Hours:</strong><br>' +
-          place.opening_hours.weekday_text[0] + '<br>' +
-          place.opening_hours.weekday_text[1] + '<br>' +
-          place.opening_hours.weekday_text[2] + '<br>' +
-          place.opening_hours.weekday_text[3] + '<br>' +
-          place.opening_hours.weekday_text[4] + '<br>' +
-          place.opening_hours.weekday_text[5] + '<br>' +
-          place.opening_hours.weekday_text[6];
-      }
-      if (place.photos) {
-        innerHTML += '<br><br><img src="' + place.photos[0].getUrl(
-          { maxHeight: 100, maxWidth: 200 }) + '">';
-      }
-      innerHTML += '</div>';
-      infowindow.setContent(innerHTML);
-      infowindow.open(map, marker);
-      // Make sure the marker property is cleared if the infowindow is closed.
-      infowindow.addListener('closeclick', function () {
-        infowindow.marker = null;
-      });
-    }
-  });
-}
 
 $(document).ready(function () {
 
@@ -516,10 +388,4 @@ $(document).ready(function () {
     zoomToArea();
   });
 
-  // Listen for the event fired when the user selects a prediction and clicks
-  // "go" more details for that place.
-  document.getElementById('go-places').addEventListener('click', textSearchPlaces);
-  $('[data-toggle="offcanvas"]').click(function () {
-    $('.row-offcanvas').toggleClass('active')
-  });
 });
