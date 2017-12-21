@@ -61,7 +61,7 @@ class FourSquareSettings{
     return fetch(foursquare.getRecommendEndpointURL(lat, lng))
     .catch(err => {
       // this will fire when cors error/network error/etc... happened
-      console.log('CLIENT-ERR :', err);
+      window.alert('There is network probelm. Please try again.');
       // throw new Error('Something goes wrong with internet access. Please retry later')
       return [];
     })
@@ -69,7 +69,6 @@ class FourSquareSettings{
       return res.json();
     })
     .then(recommends => {
-      console.log(recommends);
       return recommends.response.groups[0].items;
     })
   }
@@ -128,7 +127,7 @@ class FourSquareSettings{
 
 // ViewModel of knockout js.
 // This is used to bind data with html.
-const viewModel = function() {
+const ViewModel = function() {
   const self = this;
   // wonder these should be observale.
   this.markers = ko.observableArray();
@@ -139,6 +138,8 @@ const viewModel = function() {
   // variables binded to html
   // search query
   this.query = ko.observable('');
+  // zoom to area text
+  this.zoomAreaText = ko.observable('');
   // image source url which showed in place detail
   this.srcURL = ko.observable('../img/no-image.jpg');
   // place name which showed in place detail
@@ -199,10 +200,17 @@ const viewModel = function() {
       }
     });
   });
+
+  /**
+   * Call zoomToArea function
+   */
+  this.callZoomToArea = function() {
+    zoomToArea();
+  }
 };
 
 // create viewModel instance
-const vm = new viewModel();
+const vm = new ViewModel();
 // bind vm to html
 ko.applyBindings(vm);
 
@@ -307,6 +315,11 @@ function initMap(lat=40.7413549, lng=-73.9980244) {
   .catch(err => console.log(err));
 }
 
+// Error handler for google map API
+function mapError() {
+  window.alert('Failed to load map. Please try again later.');
+};
+
 /**
  * This function populates the infowindow when the marker is clicked. We'll only allow
  * one infowindow which will open at the marker that is clicked, and populate based
@@ -319,6 +332,10 @@ function populateInfoWindow(marker, infowindow) {
   if (infowindow.marker != marker) {
     // Clear the infowindow content to give the streetview time to load.
     infowindow.setContent('');
+    if (infowindow.marker){
+      infowindow.marker.setAnimation(null);
+    }
+    marker.setAnimation(google.maps.Animation.BOUNCE);
     infowindow.marker = marker;
     // Make sure the marker property is cleared if the infowindow is closed.
     infowindow.addListener('closeclick', function () {
@@ -401,7 +418,7 @@ function zoomToArea() {
   // Initialize the geocoder.
   const geocoder = new google.maps.Geocoder();
   // Get the address or place that the user entered.
-  const address = document.getElementById('zoom-to-area-text').value;
+  const address = vm.zoomAreaText();
   // Make sure the address isn't blank.
   if (address === '') {
     window.alert('You must enter an area, or address.');
@@ -438,12 +455,3 @@ function activateHTMLClass(index){
   $('.list-group-item').removeClass('active');
   $(`.list-group-item:eq(${index})`).addClass('active');
 }
-
-
-$(document).ready(function () {
-
-  document.getElementById('zoom-to-area').addEventListener('click', function () {
-    zoomToArea();
-  });
-
-});
