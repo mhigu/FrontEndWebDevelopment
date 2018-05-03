@@ -6,9 +6,15 @@ This repository is for Udacity Front End Developer nano degree program.
 
 see this link. [Udacity Front End Developer](https://www.udacity.com/course/front-end-web-developer-nanodegree--nd001)
 
+## Project Outcomes
+
+There are five main outcomes (in detail, there are more) in different three part. Those are pused into this repository as each directory.
+
+Just simple description for those are bellow.
+
 ## JavaScript Foundations
 
-Create static responsive web page with HTML/CSS to learn what is responsive web site and how to create.
+Create static responsive web page with HTML/CSS to learn what is responsive web site and how to create it.
 
 ![image](./readme_stuff/p1.jpg)
 
@@ -31,7 +37,7 @@ Create simple application using HTML/CSS and JavaScript to learn technical matte
 
 ![image](./readme_stuff/p3.jpg)
 
-### ClassicArcadeGameClone
+### Classic Arcade Game Clone
 
 ![image](./readme_stuff/p4.jpg)
 
